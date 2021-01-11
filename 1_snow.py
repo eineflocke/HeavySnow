@@ -34,6 +34,7 @@ if "tkni" in os.uname().nodename.lower():
 ################################
 
 ymdhjstnow = datetime.now().strftime("%Y%m%d%H")
+mjstnow    = int(datetime.now().strftime("%M"))
 
 def usage():
     print(''' 
@@ -140,6 +141,9 @@ def downloader(url, filepath, overwrite = False):
     return True
 
 def downloader4latest(url, filename, wait_min, overwrite = False):
+    if  mjstnow < wait_min:
+        return True
+
     ymdhfile = get_init(ymdhjstnow, wait_min = wait_min, init_interval_hour = 1)
     ymdhfile = ft2valid(ymdhfile, 9)
     filepath = "raw/" + ymdhfile + "/" + filename
@@ -181,14 +185,13 @@ with open("csv/stationplus.csv", "r", encoding="shift_jis") as f:
     del stations[0]
     del stations[0]
 
-colnum    = stacolnames.index("観測所番号")
+colkey    = stacolnames.index("検索キー")
 colorg    = stacolnames.index("所属")
 colpref   = stacolnames.index("府県")
-colsimple = stacolnames.index("観測所名")
 colname   = stacolnames.index("情報発表名")
-coljma    = stacolnames.index("JMA番号")
-colqc     = stacolnames.index("気温JMA番号")
-colsd     = stacolnames.index("積雪基準")
+colsd     = stacolnames.index("積雪厳重")
+#coljma    = stacolnames.index("JMA番号")
+#colqc     = stacolnames.index("気温JMA番号")
 
 ########################
 ### data acquisition ###
@@ -269,7 +272,7 @@ if "n" in symbols:
     urlpre = "http://doboku-bousai.pref.niigata.jp/douro/servlet/bousaiweb.servletBousaiTableDetail?sy=gra_snow&rg=2&sn="
 
     for row in [x for x in stations if (x[colpref] == "新潟" and x[colorg] == "10")]:
-        id       = row[colnum].strip()
+        id       = row[colkey].strip()
         url      = urlpre + id
         filename = "niigata_" + id + ".html"
         result = downloader4latest(url, filename, 10, overwrite = False)
@@ -299,7 +302,7 @@ if "c" in symbols:
         ymdhfile = ft2valid(ymdhfile, 9)
 
         for row in [x for x in stations if (x[colpref] == "栃木" and x[colorg] == "10")]:
-            filepath = "raw/" + ymdhfile + "/" + "tochigi_" + row[colnum].strip() + ".json"
+            filepath = "raw/" + ymdhfile + "/" + "tochigi_" + row[colkey].strip() + ".json"
 
             if not os.path.isdir(os.path.dirname(filepath)):
                 os.makedirs(os.path.dirname(filepath))
@@ -308,7 +311,7 @@ if "c" in symbols:
                 continue
 
             params = json.dumps({
-                "bordID": row[colnum].strip(),
+                "bordID": row[colkey].strip(),
                 "bordKind": "WK",
                 "ctrlID": None,
                 "args1": ["NaturalSnow", "Temp"],
@@ -334,8 +337,8 @@ if "c" in symbols:
 
 if "u" in symbols:
     for row in [x for x in stations if(x[colorg]=="10" and x[colpref]=="青森")]:
-        url = "http://www.koutsu-aomori.com/Road/" + row[colnum]
-        filename = "aomori_" + row[colnum][-3:] + ".html"
+        url = "http://www.koutsu-aomori.com/Road/" + row[colkey]
+        filename = "aomori_" + row[colkey][-3:] + ".html"
         result = downloader4latest(url, filename, 40, overwrite = False)
 
         if not result:
@@ -354,10 +357,10 @@ if "v" in symbols:
 
 if "j" in symbols:
     for row in [x for x in stations if x[colorg] == "1"]:
-        jma      = row[colqc].strip()[1:]
+        jma      = row[colkey]
         url      = "https://www.jma.go.jp/jp/amedas_h/today-" + jma + ".html"
         filename = "jmahp_" + jma + ".html"
-        result = downloader4latest(url, filename, 8)
+        result = downloader4latest(url, filename, 8, overwrite = False)
 
         #if not result:
         #    break
@@ -365,7 +368,7 @@ if "j" in symbols:
         url      = "https://www.jma.go.jp/jp/amedas_h/yesterday-" + jma + ".html"
         ymdhyest = ft2valid(ymdhjstnow, -1, False)[0:8] + "00"
         filepath = "raw/" + ymdhyest + "/jmahp_" + jma + ".html"
-        result = downloader(url, filepath)
+        result = downloader(url, filepath, overwrite = False)
 
         #if not result:
         #    break
@@ -496,16 +499,12 @@ if "p" in symbols:
                 for mlitpoint in mlitjson["body"]:
                     if (
                         (
-                            not "関山" in row[colname]
-                            and mlitpoint[jsonkey1] in row[colname]
+                            not "関山" in row[colkey]
+                            and mlitpoint[jsonkey1] in row[colkey]
                         ) or (
-                            "R17関山" in row[colname]
-                            and mlitpoint[jsonkey1] == "関山"
-                            and mlitpoint["路線名称"] == "国道17号"
-                        ) or (
-                            "R18関山" in row[colname]
-                            and mlitpoint[jsonkey1] == "関山"
-                            and mlitpoint["路線名称"] == "国道18号"
+                            "関山" in row[colkey]
+                            and mlitpoint[jsonkey1] == row[colkey].split(":")[0]
+                            and mlitpoint["路線名称"] == row[colkey].split(":")[1]
                         )
                     ):
                         mlit = mlitpoint
@@ -540,7 +539,16 @@ if "p" in symbols:
                 mlitjson = json.load(open(filepath, "r"))
 
                 for mlitpoint in mlitjson["body"]:
-                    if mlitpoint[jsonkey1] in row[colname]:
+                    if (
+                        (
+                            not "関山" in row[colkey]
+                            and mlitpoint[jsonkey1] in row[colkey]
+                        ) or (
+                            "関山" in row[colkey]
+                            and mlitpoint[jsonkey1] == row[colkey].split(":")[0]
+                            and mlitpoint["路線名称"] == row[colkey].split(":")[1]
+                        )
+                    ):
                         temp = mlitpoint["気温"]
                         break
 
@@ -576,7 +584,7 @@ if "p" in symbols:
                         soupelems = souprow.find_all("td")
 
                         snowname  = soupelems[0].get_text()
-                        staname2  = re.sub("\(.*\)", "", row[colname])
+                        staname2  = row[colkey]
                         if not staname2 in snowname:
                             continue
 
@@ -624,7 +632,7 @@ if "p" in symbols:
                 mlit = None
 
                 for mlitpoint in mlitjson:
-                    if row[colnum] in mlitpoint["pname"]:
+                    if row[colkey] in mlitpoint["pname"]:
                         mlit = mlitpoint
                         break
 
@@ -677,7 +685,7 @@ if "p" in symbols:
                 mlit = None
 
                 for mlitdata in mlitjson["snowDatas"]:
-                    if row[colsimple] == "佐久南気象観測局":
+                    if row[colkey] == "佐久南気象観測局":
                         mlitnum = (
                               mlitdata["station"]["managementNumber"]
                             + "."
@@ -687,7 +695,7 @@ if "p" in symbols:
                     else:
                         mlitnum = mlitdata["station"]["managementNumber"]
 
-                    if row[colnum] == mlitnum:
+                    if row[colkey] == mlitnum:
                         ymdhmlit = re.sub("[/:\s]", "", mlitdata["dataDT"])[0:12]
                         if ymdhmlit[0:10] != ymdhback:
                             break
@@ -713,7 +721,7 @@ if "p" in symbols:
             ### decoder for niigata-pref ###
             ################################
 
-            filepath = "raw/" + ymdhjst + "/niigata_" + row[colnum].strip() + ".html"
+            filepath = "raw/" + ymdhjst + "/niigata_" + row[colkey].strip() + ".html"
 
             if not os.path.isfile(filepath):
                 continue
@@ -782,10 +790,10 @@ if "p" in symbols:
                 for backhour2 in range(backhour, 24 + backhour):
                     ymdhback2 = ft2valid(ymdhjst, -1 * backhour2, False, 0)
 
-                    if not str(ymdhback2) + "00" in toyamajson["snow_" + str(row[colnum])]["snow_data"].keys():
+                    if not str(ymdhback2) + "00" in toyamajson["snow_" + str(row[colkey])]["snow_data"].keys():
                         continue
 
-                    toyama = toyamajson["snow_" + str(row[colnum])]["snow_data"][str(ymdhback2) + "00"]
+                    toyama = toyamajson["snow_" + str(row[colkey])]["snow_data"][str(ymdhback2) + "00"]
 
                     try:
                         sd25  [backhour2] = int(toyama["snowcover"])
@@ -826,7 +834,7 @@ if "p" in symbols:
                 ishikawa = None
 
                 for ishikawapoint in ishikawajson["vals"]:
-                    if str(ishikawapoint["id"]) == str(row[colnum]):
+                    if str(ishikawapoint["id"]) == str(row[colkey]):
                         ishikawa = ishikawapoint
                         break
 
@@ -875,7 +883,7 @@ if "p" in symbols:
                 fukui = None
 
                 for fukuipoint in fukuijson:
-                    if str(fukuipoint["id"]) == str(row[colnum]):
+                    if str(fukuipoint["id"]) == str(row[colkey]):
                         fukui = fukuipoint["datas"]
                         break
 
@@ -923,7 +931,7 @@ if "p" in symbols:
                 temp      = invalid
 
                 ymdhback = ft2valid(ymdhjst, -1 * backhour, False, 0)
-                filepath = "raw/" + ymdhback + "/tochigi_" + row[colnum].strip() + ".json"
+                filepath = "raw/" + ymdhback + "/tochigi_" + row[colkey].strip() + ".json"
 
                 if not os.path.isfile(filepath):
                     continue
@@ -958,7 +966,7 @@ if "p" in symbols:
 
             for backhour in [2, 1, 0]:
                 ymdhback = ft2valid(ymdhjst, -1 * backhour, False, 0)
-                filepath = "raw/" + ymdhback + "/aomori_" + row[colnum][-3:] + ".html"
+                filepath = "raw/" + ymdhback + "/aomori_" + row[colkey][-3:] + ".html"
 
                 if not os.path.isfile(filepath):
                     continue
@@ -1027,7 +1035,7 @@ if "p" in symbols:
                     aomori_at = [x for x in aomori_at if x[col_s_a][:-2] != ""]
 
                     try:
-                        aomori_at = aomori_at[[x[1] for x in aomori_at].index(row[colname][:-3])]
+                        aomori_at = aomori_at[[x[1] for x in aomori_at].index(row[colkey])]
                         sd25[backhour] = int(aomori_at[col_s_a][:-2])
                     except:
                         continue
@@ -1051,10 +1059,10 @@ if "p" in symbols:
                 ymdhback24 = ft2valid(ymdhjst, -1 * backhour, True, 0)
 
                 if int(ymdhback24[0:8]) == int(ymdhjst24[0:8]):
-                    filepath = "raw/" + ymdhjst + "/jmahp_" + row[colqc][1:] + ".html"
+                    filepath = "raw/" + ymdhjst + "/jmahp_" + row[colkey] + ".html"
                 else:
                     ymdhyest = ft2valid(ymdhjst, -1, False, 0)[0:8] + "00"
-                    filepath = "raw/" + ymdhyest + "/jmahp_" + row[colqc][1:] + ".html"
+                    filepath = "raw/" + ymdhyest + "/jmahp_" + row[colkey] + ".html"
 
                 if not os.path.isfile(filepath):
                     continue
@@ -1223,7 +1231,7 @@ if "p" in symbols:
             if sf25[backhour] == invalid:
                 sd25flag[backhour] = max(5, sd25flag[backhour])
 
-        if row[colsd] == "////" or row[colsd] == "":
+        if row[colsd] == "":
             snowspare = invalid
         else:
             snowspare = int(row[colsd])

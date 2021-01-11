@@ -155,6 +155,7 @@ td { height: 32px; }
 .td-nam { width: 200px; }
 .td-ico { width:  25px; }
 .td-snc { width:  45px; }
+.td-snw { width:  35px; }
 .td-sns { width:  35px; }
 .td-snn { width:  35px; }
 .td-dnn { width:  35px; }
@@ -164,6 +165,7 @@ td { height: 32px; }
 .td-cht { width: 120px; }
 
 th.td-snc      { font-size: 85%; }
+th.td-snw      { font-size: 85%; }
 th.td-sns      { font-size: 85%; }
 th.td-snn      { font-size: 85%; }
 th.td-dnn      { font-size: 85%; }
@@ -195,7 +197,6 @@ td.td-prf      { font-weight: bold; }
 td.td-ctv      { font-size: 85%; }
 td.td-alt      { font-size: 75%; }
 td.td-cls      { font-size: 75%; }
-td.td-sns      { font-size: 85%; }
 td.td-snn      { font-size: 85%; }
 td.td-dnn      { font-size: 85%; }
 td.td-tmp      { font-size: 85%; }
@@ -206,7 +207,7 @@ span.td-nam-main { font-weight: bold; }
 .td-nam { line-height: 50%; }
 .td-nam-obs  { font-size: 70%; color: #888; }
 
-td.td-sns { font-size:  80%; color: #666; }
+td.td-snw, td.td-sns { font-size:  80%; color: #666; }
 td.td-snc { font-size: 100%; font-weight: bold; }
 td.td-tmp { font-size:  85%; }
 

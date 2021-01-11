@@ -1,5 +1,62 @@
 'use strict';
 
+//////////////////////////
+// define table columns //
+//////////////////////////
+
+const header_sta = [
+  {
+    name: '区分',
+      keys: 'cls',
+      classes: 'td-cls',
+  }, {
+    name: '標高',
+      keys: 'alt',
+      classes: 'td-alt',
+  }, {
+    name: '府県',
+      keys: 'prf',
+      classes: 'td-prf',
+  }, { 
+    name: '市町村',
+      keys: 'ctv',
+      classes: 'td-ctv',
+  }, {
+    name: '情報発表名',
+      keys: 'nam',
+      classes: 'td-nam',
+      sortelem: 'nam',
+  }
+];
+
+const header_val = [
+  {
+    name: '積雪',
+      sub:  ['実況', 'あ厳', 'あ特'],
+      keys: ['snc', 'snc', 'snc'],
+      classes: ['td-snc leftline', 'td-snw', 'td-sns'],
+      sortelem: ['snc', 'snw', 'sns'],
+  }, {
+    name: '気温', 
+      sub:  ['実況'],
+      keys: ['tmp'],
+      classes: ['td-tmp leftline'],
+      sortelem: ['tmp'],
+  }, {
+    name: '降雪深', 
+      sub:  ['S3', 'S6', 'S12', 'S24'],
+      keys: ['s3', 's6', 's12', 's24'],
+      classes: ['td-snn td-s3 leftline', 'td-snn td-s6', 'td-snn td-s12', 'td-snn td-s24'],
+      sortelem: ['s3', 's6', 's12', 's24'],
+  }, {
+    name: '積雪深差', 
+      sub:  ['D3', 'D6', 'D12', 'D24'],
+      keys: ['d3', 'd6', 'd12', 'd24'],
+      classes: ['td-dnn td-d3 leftline', 'td-dnn td-d6', 'td-dnn td-d12', 'td-dnn td-d24'],
+      sortelem: ['d3', 'd6', 'd12', 'd24'],
+  }
+];
+
 //////////////////////
 // global variables //
 //////////////////////
@@ -181,6 +238,7 @@ const get_stations = function() {
         if (rows[i] == '') { break; }
         sta[i] = rows[i].split(',');
       }
+      icols.sta.key = sta[0].indexOf('検索キー');
       icols.sta.prf = sta[0].indexOf('府県');
       icols.sta.org = sta[0].indexOf('所属');
       icols.sta.ctv = sta[0].indexOf('市町村');
@@ -193,15 +251,14 @@ const get_stations = function() {
       icols.sta.qc  = sta[0].indexOf('気温JMA番号');
       icols.sta.lat = sta[0].indexOf('緯度');
       icols.sta.lon = sta[0].indexOf('経度');
-      icols.sta.url = sta[0].indexOf('URL');
       icols.sta.warningHour  = sta[0].indexOf('警報期間');
       icols.sta.warningVal   = sta[0].indexOf('警報基準');
       icols.sta.kirokuHour   = sta[0].indexOf('記録雪期間');
       icols.sta.kirokuVal    = sta[0].indexOf('記録雪基準');
       icols.sta.tanjikanHour = sta[0].indexOf('短時間期間');
       icols.sta.tanjikanVal  = sta[0].indexOf('短時間基準');
-      icols.sta.sdVal        = sta[0].indexOf('積雪基準');
-      icols.sta.sdLimit      = sta[0].indexOf('積雪余裕');
+      icols.sta.sdWarning    = sta[0].indexOf('積雪厳重');
+      icols.sta.sdSpecial    = sta[0].indexOf('積雪特警');
       //console.log('done: get_stations');
       resolve();
     };
@@ -243,6 +300,7 @@ const get_values = function() {
       for (let i = 0; i < val.length; i++) names_val.push(val[i][icols.val.nam]);
 
       for (let i = 0; i < sta.length; i++) ival[i] = names_val.indexOf(names_sta[i]);
+      console.log(ival);
 
       //console.log('done: get_values');
       resolve();
@@ -260,63 +318,6 @@ const draw_sheet = function(sortelem) {
     const area = document.getElementById('area').value;
     const orga = document.getElementById('orga').value;
 
-    //////////////////////////
-    // define table columns //
-    //////////////////////////
-
-    const header_sta = [
-      {
-        name: '区分',
-          icol: icols.sta.cls,
-          classes: 'td-cls'
-      }, {
-        name: '標高',
-          icol: icols.sta.alt,
-          classes: 'td-alt'
-      }, {
-        name: '府県',
-          icol: icols.sta.prf,
-          classes: 'td-prf'
-      }, { 
-        name: '市町村',
-          icol: icols.sta.ctv,
-          classes: 'td-ctv'
-      }, {
-        name: '情報発表名',
-          icol: icols.sta.nam,
-          classes: 'td-nam',
-          sortelem: 'nam'
-      }
-    ];
-
-    const header_val = [
-      {
-        name: '積雪',
-          sub:  ['実況', 'あと'],
-          icol: [icols.val.snc, icols.val.snc],
-          classes: ['td-snc leftline', 'td-sns'],
-          sortelem: ['snc', 'sns'],
-      }, {
-        name: '気温', 
-          sub:  ['実況'],
-          icol: [icols.val.tmp],
-          classes: ['td-tmp leftline'],
-          sortelem: ['tmp'],
-      }, {
-        name: '降雪深', 
-          sub:  ['S3', 'S6', 'S12', 'S24'],
-          icol: [icols.val.s3, icols.val.s6, icols.val.s12, icols.val.s24],
-          classes: ['td-snn td-s3 leftline', 'td-snn td-s6', 'td-snn td-s12', 'td-snn td-s24'],
-          sortelem: ['s3', 's6', 's12', 's24'],
-      }, {
-        name: '積雪深差', 
-          sub:  ['D3', 'D6', 'D12', 'D24'],
-          icol: [icols.val.d3, icols.val.d6, icols.val.d12, icols.val.d24],
-          classes: ['td-dnn td-d3 leftline', 'td-dnn td-d6', 'td-dnn td-d12', 'td-dnn td-d24'],
-          sortelem: ['d3', 'd6', 'd12', 'd24'],
-      }
-    ];
-
     ///////////////////////////
     // generate table header //
     ///////////////////////////
@@ -330,7 +331,6 @@ const draw_sheet = function(sortelem) {
       let thattr = ' rowspan="2" class="' + h.classes + '"';
       if (h.sortelem !== undefined) solo += '<span class="up">▲</span><span class="down">▼</span>';
       if (h.name == '情報発表名') {
-        solo += '</th><th rowspan="2" class="td-ico"><span>地点詳細</span>';
         solo += '</th><th rowspan="2" class="td-ico"><span>取得元</span>';
       }
       insert += '<th' + thattr + '>' + solo + '</th>';
@@ -425,7 +425,7 @@ const draw_sheet = function(sortelem) {
       insert_row += '<tr id="no' + irow + '">';
 
       header_sta.forEach(function(h) {
-        let solo = sta[irow][h.icol];
+        let solo = sta[irow][icols.sta[h.keys]];
 
         let tdclasses = h.classes;
 
@@ -458,8 +458,7 @@ const draw_sheet = function(sortelem) {
           }
           solo += '<img src="' + imgfile + '" class="td-nam-sub" />';
           if (sta[irow][icols.sta.prf] == '石川' && sta[irow][icols.sta.org] == '10') solo += '<br /><span class="td-nam-obs">（' + sta[irow][icols.sta.obs] + '）</span>';
-          solo += '</td><td class="td-ico set_point">&#x1f4cd;';
-          solo += '</td><td class="td-ico"><a href="' + sta[irow][icols.sta.url] + '" target="_blank">&#x1f310;</a>';
+          solo += '</td><td class="td-ico"><a href="' + return_url(irow) + '" target="_blank">&#x1f310;</a>';
         }
 
         insert_row += '<td class="' + tdclasses + '">' + solo + '</td>';
@@ -467,7 +466,7 @@ const draw_sheet = function(sortelem) {
 
       header_val.forEach(function(h) {
         for (let i = 0; i < h.sub.length; i++) {
-          let solo = val[ival[irow]][h.icol[i]];
+          let solo = val[ival[irow]][icols.val[h.keys[i]]];
 
           let solonum  = split_flag(solo)[0];
           let soloflag = split_flag(solo)[1];
@@ -478,23 +477,24 @@ const draw_sheet = function(sortelem) {
           const k_limit_val  = sta[irow][icols.sta.kirokuVal   ] - 0;
           const t_limit_hour = sta[irow][icols.sta.tanjikanHour];
           const t_limit_val  = sta[irow][icols.sta.tanjikanVal ] - 0;
-          const s_val        = sta[irow][icols.sta.sdVal  ] - 0;
-          //const s_limit      = sta[irow][icols.sta.sdLimit] - 0;
+          const s_warning    = sta[irow][icols.sta.sdWarning   ];
+          const s_special    = sta[irow][icols.sta.sdSpecial   ];
 
           let tdclasses = h.classes[i];
 
-          if (h.sub[i] == 'あと') {
-            if (judge_joho(irow) && !isNaN(s_val)) {
-              solonum = s_val - solonum;
-            } else {
+          if (h.sub[i].indexOf('あ') == 0) {
+            const s_val = ((h.sub[i] == 'あ厳') ? s_warning : s_special);
+            if (!judge_joho(irow) || s_val == '') {
               solo = '-';
               solonum = NaN;
+            } else {
+              solonum = (s_val - 0) - solonum;
             }
           }
 
           if        (solo == 'X' || solo == '-') {
             tdclasses += ' lvX';
-          } else if (h.sub[i] == 'あと') {
+          } else if (h.sub[i].indexOf('あ') == 0) {
             if (solonum <= 0) {
               tdclasses += ' joho';
             } else {
@@ -537,9 +537,18 @@ const draw_sheet = function(sortelem) {
       if (sortelem !== undefined) {
         if        (sortelem == 'nam') {
           sortval = sta[irow][icols.sta.yom] || 'ﾝ';
+        } else if (sortelem == 'snw') {
+          if (sta[irow][icols.sta.sdWarning] == '' || !judge_joho(irow)) {
+            sortval = 999 * sortupdown;
+          } else {
+            sortval = sta[irow][icols.sta.sdWarning] - split_flag(val[ival[irow]][icols.val.snc])[0];
+          }
         } else if (sortelem == 'sns') {
-          sortval = sta[irow][icols.sta.sdVal] - split_flag(val[ival[irow]][icols.val.snc])[0];
-          if (sortval === '' || isNaN(sortval) || !judge_joho(irow)) sortval = 999 * sortupdown;
+          if (sta[irow][icols.sta.sdSpecial] == '' || !judge_joho(irow)) {
+            sortval = 999 * sortupdown;
+          } else {
+            sortval = sta[irow][icols.sta.sdSpecial] - split_flag(val[ival[irow]][icols.val.snc])[0];
+          }
         } else {
           sortval = split_flag(val[ival[irow]][icols.val[sortelem]])[0];
           if (sortval === '' || isNaN(sortval)) sortval = 999 * sortupdown;
@@ -622,15 +631,12 @@ const draw_sheet = function(sortelem) {
     document.querySelector('#choka').innerHTML = alerttext;
 
     if (alerttext != '' && init == timelist[0]) {
+      if (document.querySelector('#oto').checked) button1();
       document.querySelector('#alerttitle').classList.add('alertanim');
       document.querySelector('#alerttitle').setAttribute('title', '報知基準を満たしている地点があります。');
     } else {
       document.querySelector('#alerttitle').classList.remove('alertanim');
       document.querySelector('#alerttitle').removeAttribute('title');
-    }
-
-    if (alerttext != '' && document.querySelector('#oto').checked && init == timelist[0]) {
-      button1();
     }
 
     if (alerttext == '') { button3(); }
@@ -874,7 +880,6 @@ const draw_map = function() {
       ).bindPopup((
         '<strong>' + sta[irow][icols.sta.nam] + '</strong>'
         + '<br /><span class="tooltiptext-small">積雪深</span> <strong>' + val[ival[irow]][icols.val.snc] + '</strong> <span class="tooltiptext-small">cm</span>'
-        + '<br /><span class="tooltiptext-small">気温</span> <strong>'   + val[ival[irow]][icols.val.tmp] + '</strong> <span class="tooltiptext-small">℃</span>'
       )).addTo(markerlayer).on('click', function(e) { set_point(e.target.irow, true); });
 
       markers[irow].irow = irow;
@@ -1164,6 +1169,55 @@ const make_prefarray = function(area) {
   }
   return prefarray;
 }; // make_prefarray
+
+
+const return_url = function(irow) {
+  switch (sta[irow][icols.sta.org]) {
+    case '1':
+      return 'https://www.jma.go.jp/jp/amedas_h/today-' + sta[irow][icols.sta.key] + '.html';
+    case '3':
+      switch (sta[irow][icols.sta.prf]) {
+        case '新潟':
+        case '富山':
+        case '石川':
+          return 'https://its.hrr.mlit.go.jp/list.php?t=snow';
+        case '福井':
+          return 'http://road.kkr.mlit.go.jp/road/list.php?t=snow';
+        case '群馬':
+          return 'https://www.ktr.mlit.go.jp/takasaki/road/xml01.html';
+        case '栃木':
+        case '東京':
+        case '神奈川':
+        case '山梨':
+          return 'http://www.road.ktr.mlit.go.jp/php/snow_list.php';
+        case '長野':
+          return 'https://www.ktr.mlit.go.jp/nagano/douroinfo/road/html/list/snowList.html';
+        default:
+          return null;
+      }
+    case '10':
+      switch (sta[irow][icols.sta.prf]) {
+        case '新潟':
+          return 'http://doboku-bousai.pref.niigata.jp/douro/servlet/bousaiweb.servletBousaiTableDetail?sy=gra_snow&rg=2&sn=' + sta[irow][icols.sta.key];
+        case '富山':
+          return 'https://www.toyama-douro.toyama.toyama.jp/sensor_detail.html?snow_' + sta[irow][icols.sta.key];
+        case '石川':
+          return 'https://douro.pref.ishikawa.lg.jp';
+        case '福井':
+          return 'https://info.pref.fukui.lg.jp/hozen/yuki/weather.html?id=' + sta[irow][icols.sta.key];
+        case '栃木':
+          return 'http://www.kendo.pref.tochigi.lg.jp/roadinfo/WeatherDetailInfo.aspx?validateSensors=NaturalSnow_&bordID=' + sta[irow][icols.sta.key];
+        case '青森':
+          return 'http://www.koutsu-aomori.com/Road/yukijyoho.cgi/' + sta[irow][icols.sta.key].slice(-3);
+        default:
+          return null;
+      }
+    case '100':
+      return 'http://gensiryoku2.pref.aomori.lg.jp/atom1/index.html';
+    default:
+      return null;
+  }
+}; // return_url
 
 
 const split_flag = function(v) {
