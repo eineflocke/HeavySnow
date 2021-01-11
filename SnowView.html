@@ -8,7 +8,7 @@
 <meta http-equiv="Pragma" content="no-cache" />
 <meta http-equiv="Cache-Control" content="no-cache" />
 
-<link rel="icon" href="lib/img/8-1s.png" />
+<link rel="icon" href="lib/img/8-1s2.png" />
 
 <title>SnowView</title>
 
@@ -28,109 +28,163 @@
 <script src="lib/js/chartist-plugin-pointlabels.min.js"></script>
 <link href="lib/css/chartist.min.css" rel="stylesheet">
 
-<link href="lib/css/snowview.css" rel="stylesheet" />
+<script src="lib/js/time.js"></script>
 
-<script>
-window.Promise || document.write('<script src="lib/js/promise-7.0.4.min.js"><\/script>');
-</script>
+<link href="snowview.css" rel="stylesheet" />
 
 </head>
-<body onload="initialize();">
+<body>
 
 <!-- navbar -->
 <nav id="tabs" class="navbar navbar-light bg-light fixed-top">
     <div class="navbar-brand">
-        <img src="lib/img/8-1s.png" width="35" height="35" style="margin-left:10px;" /> 
-        <span>SnowView</span>
+        <img src="lib/img/8-1s2.png" width="35" height="35" style="margin-left:10px;" />
     </div>
 
     <div class="form-inline mr-auto">
-        <!--
-        <a type="button" class="btn btn-info" href="SnowPlot.html" role="button">SnowPlot</a>
-        <a type="button" class="btn btn-info btn-sm" href="howto.html" role="button" style="margin-left: 15px; font-size: 80%;">使い方</a>
-    -->
+        <a role="button" class="btn btn-outline-danger" href="http://133.125.40.135/SnowWS/SnowView.html" target="_blank" style="padding: 0;font-size: 80%;">非常用<br />バックアップ</a>
+        <button type="button" id="usage" class="btn btn-info">使い方</button>
         <form id="init_control" onsubmit="return false;">
-            <button type="button" id="init_b"  class="btn btn-info" onclick="changeinit(-1);">＜</button>
-            <button type="button" id="init_n"  class="btn btn-info" onclick="update();">最新</button>
-            <button type="button" id="init_f"  class="btn btn-info" onclick="changeinit(+1);">＞</button>
-            <input  type="text"   id="init"    class="form-control" data-toggle="tooltip" data-placement="bottom" data-html="true">
-            <button type="button" id="init_e"  class="btn btn-info" onclick="changeinit(98);">決定</button>
+            <button type="button" id="init_b"  class="btn btn-info">&lt;</button>
+            <button type="button" id="init_n"  class="btn btn-info">最新</button>
+            <button type="button" id="init_f"  class="btn btn-info">&gt;</button>
+            <input  type="text"   id="init"    class="form-control" data-toggle="tooltip" data-placement="bottom" data-html="true" />
+            <button type="button" id="init_e"  class="btn btn-info">決定</button>
         </form>
         <form id="area_control">
-            <select id="area" class="form-control" onchange="redraw();">
+            <select id="area" class="form-control">
                 <option value="all" selected>全県</option>
+                <option value="hok">北陸</option>
+                <option value="ngtgnmngn">新潟+県境</option>
+                <option disabled>---</option>
                 <option value="ngt">新潟</option>
                 <option value="tym">富山</option>
                 <option value="isk">石川</option>
                 <option value="fki">福井</option>
-                <option value="gnm">群馬</option>
-                <option value="tcg">栃木</option>
+                <option disabled>---</option>
+                <option value="tcggnm">栃木・群馬</option>
                 <option value="ngn">長野</option>
-                <option value="hok">北陸</option>
-                <option value="ngtgnmngn">新潟+県境</option>
+                <option disabled>---</option>
+                <option value="aom">青森</option>
             </select>
         </form>
         <form id="orga_control">
-            <select id="orga" class="form-control" onchange="redraw();">
+            <select id="orga" class="form-control">
                 <option value="all" selected>全観測地点</option>
-                <option value="jma">気象庁</option>
                 <option value="info">情報対象</option>
+                <option value="jma">気象庁</option>
                 <option value="ken">県</option>
                 <option value="mlit">整備局</option>
+                <option value="atom">原子力</option>
             </select>
         </form>
     </div>
+
     <div class="form-inline">
         <form id="confi">
-            全地点グラフ（重い！）
-            <input type="checkbox" id="graph" data-width="48" data-height="24" data-size="xs" data-toggle="toggle" data-onstyle="primary" data-offstyle="secondary" unchecked onchange="redraw();" />
-            / 報知
-            <input type="checkbox" id="oto"   data-width="48" data-height="24" data-size="xs" data-toggle="toggle" data-onstyle="primary" data-offstyle="secondary" unchecked />
-             / 自動更新
-            <input type="checkbox" id="renew" data-width="48" data-height="24" data-size="xs" data-toggle="toggle" data-onstyle="primary" data-offstyle="secondary" checked onchange="autoload();" />
+            <span id="alerttitle" data-toggle="tooltip" data-html="true">報知</span>
+            <input type="checkbox" id="oto"   data-width="48" data-height="24" data-size="xs" data-toggle="toggle" data-onstyle="info" data-offstyle="secondary" unchecked />
+            / 自動更新
+            <input type="checkbox" id="renew" data-width="48" data-height="24" data-size="xs" data-toggle="toggle" data-onstyle="info" data-offstyle="secondary" checked />
         </form>
     </div>
 </nav>
 
+<!-- left pane incl. chohyo -->
 <div id="chohyo">
     <table id="fixheader" class="fixheader"></table>
     <table id="sheet" class="sheet"></table>
 </div>
 
+<!-- some toggles -->
+<div id="collapse_control">
+    <div class="collapse_elems">
+        帳票<br />
+        <input type="checkbox" id="toggle_chohyo" data-width="36" data-height="24" data-size="xs" data-toggle="toggle" data-onstyle="info" data-offstyle="secondary" checked />
+    </div>
+    <div class="collapse_elems">
+        全地点<br />推移<br />（激重）<br />
+        <input type="checkbox" id="toggle_minicharts" data-width="36" data-height="24" data-size="xs" data-toggle="toggle" data-onstyle="info" data-offstyle="secondary" unchecked />
+    </div>
+    <div class="collapse_elems">
+        地図<br />
+        <input type="checkbox" id="toggle_map" data-width="36" data-height="24" data-size="xs" data-toggle="toggle" data-onstyle="info" data-offstyle="secondary" checked />
+    </div>
+</div>
+
+<!-- right pane incl. map and big charts -->
 <div id="right_pane">
     <div id="map_container">
-        <form id="elem_control">
-            <select id="elem" class="form-control" onchange="draw_map();">
-                <option value="snc" selected>積雪深</option>
-                <option value="s1h">S1</option>
-                <option value="s3h">S3</option>
-                <option value="s6h">S6</option>
-                <option value="s12h">S12</option>
-                <option value="s24h">S24</option>
-                <option value="d3h">D3</option>
-                <option value="d6h">D6</option>
-                <option value="d12h">D12</option>
-                <option value="d24h">D24</option>
-                <option value="tmp">気温</option>
-            </select>
-        </form>
     </div>
     <div id="graph_container">
-        <img id="graph_close" src="lib/img/close.png" width="25" height="25" onclick="set_point(0);" />
+        <img id="graph_close" src="lib/img/close.png" width="25" height="25" onclick="" />
         <div id="chartbig-snc"><span id="behind-chartbig-snc" class="col-snc"></span></div>
         <div id="chartbig-s01"><span id="behind-chartbig-s01" class="col-s01"></span></div>
         <div id="chartbig-tmp"><span id="behind-chartbig-tmp" class="col-tmp"></span></div>
     </div>
+    <form id="elem_control">
+        <select id="elem" class="form-control">
+            <option value="snc" selected>積雪深</option>
+            <option value="s1" >S1</option>
+            <option value="s3" >S3</option>
+            <option value="s6" >S6</option>
+            <option value="s12">S12</option>
+            <option value="s24">S24</option>
+            <option value="d3" >D3</option>
+            <option value="d6" >D6</option>
+            <option value="d12">D12</option>
+            <option value="d24">D24</option>
+            <option value="tmp">気温</option>
+        </select>
+        <span id="opacity_control">
+            タイル
+            <input type="range" id="opacity" min="0" max="1" value="0.2" step="0.1" class="slider" />
+        </span>
+    </form>
+    <div id="tile_legend"></div>
 </div>
 
+<!-- alert element and audio -->
 <audio src="lib/mp3/choka.mp3" type="audio/mp3" id="audio" preload="auto" loop></audio>
-<div id="button1wrap"><div id="button1rel"><div id="button1area">
+<div id="button1wrap" class="popwrap"><div id="button1rel" class="poprel"><div id="button1area" class="poparea">
     <p style="font-size: 25px;">基準超過！！！！</p>
     <table id="choka"></table>
-    <button id="button2" onclick="button2();" style="width: 150px; height: 40px; font-size: 20px;">アラーム停止</button>
-    <button id="button3" onclick="button3();" style="width: 100px; height: 40px; font-size: 20px;">OK</button>
+    <button id="button2" style="width: 150px; height: 40px; font-size: 20px;">アラーム停止</button>
+    <button id="button3" style="width: 100px; height: 40px; font-size: 20px;">OK</button>
 </div></div></div>
 
-<script src="lib/js/snowview.js"></script>
+<!-- usage -->
+<div id="usagewrap" class="popwrap"><div class="poprel"><div id="usagearea" class="poparea">
+    <div class="popclose">
+        <img src="lib/img/close.png" id="usage_close" width="30" height="30" />
+    </div>
+    <div class="pop0">
+        <span id="usagetitle">SnowView</span><br />
+        北陸4県（新潟・富山・石川・福井）を主な対象とした大雪監視ツール<br />
+        気象庁・地整・府県他による積雪・降雪観測データを収集し表示する
+    </div>
+    <div id="include" class="pop1"></div>
+</div></div></div>
+
+<script>
+var xhr = new XMLHttpRequest();
+xhr.open("GET", "include.html", true);
+xhr.send();
+xhr.onreadystatechange = function() {
+    if (this.status == 200) document.querySelector('#include').innerHTML = this.responseText;
+    if (this.status == 404) document.querySelector('#include').innerHTML = "include.html not found";
+}
+</script>
+
+<script>
+var path;
+var userAgent = window.navigator.userAgent.toLowerCase();
+if (userAgent.indexOf('msie') >= 0 || userAgent.indexOf('trident') >= 0) {
+    path = 'snowview.bundle.js?_=' + new Date().getTime();
+} else {
+    path = 'snowview.js?_=' + new Date().getTime();
+}
+document.write('<script src="' + path + '"><\/script>');
+</script>
 </body>
 </html>
