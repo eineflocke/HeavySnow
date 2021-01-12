@@ -45,17 +45,18 @@ const header_val = [
   }, {
     name: '降雪深', 
       sub:  ['S3', 'S6', 'S12', 'S24'],
-      keys: ['s3', 's6', 's12', 's24'],
-      classes: ['td-snn td-s3 leftline', 'td-snn td-s6', 'td-snn td-s12', 'td-snn td-s24'],
-      sortelem: ['s3', 's6', 's12', 's24'],
+      keys: ['s03', 's06', 's12', 's24'],
+      classes: ['td-snn td-s03 leftline', 'td-snn td-s06', 'td-snn td-s12', 'td-snn td-s24'],
+      sortelem: ['s03', 's06', 's12', 's24'],
   }, {
     name: '積雪深差', 
       sub:  ['D3', 'D6', 'D12', 'D24'],
-      keys: ['d3', 'd6', 'd12', 'd24'],
-      classes: ['td-dnn td-d3 leftline', 'td-dnn td-d6', 'td-dnn td-d12', 'td-dnn td-d24'],
-      sortelem: ['d3', 'd6', 'd12', 'd24'],
+      keys: ['d03', 'd06', 'd12', 'd24'],
+      classes: ['td-dnn td-d03 leftline', 'td-dnn td-d06', 'td-dnn td-d12', 'td-dnn td-d24'],
+      sortelem: ['d03', 'd06', 'd12', 'd24'],
   }
 ];
+
 
 //////////////////////
 // global variables //
@@ -87,18 +88,20 @@ icols.val = new Object();
 
 const thresholds = new Object();
 thresholds.snc = [0,9,19,39,59,79,99,149,199];
-thresholds.s1  = [0,1,2,3,4,5,7,9,15];
-thresholds.s3  = [0,1,4,9,14,19,24,29,39];
-thresholds.s6  = [0,1,4,9,14,19,24,29,39];
+thresholds.s01 = [0,1,2,3,4,5,7,9,15];
+thresholds.s03 = [0,1,4,9,14,19,24,29,39];
+thresholds.s06 = [0,1,4,9,14,19,24,29,39];
 thresholds.s12 = [0,3,9,19,29,39,49,59,79];
 thresholds.s24 = [0,3,9,19,29,39,49,59,79];
-thresholds.d3  = thresholds.s3;
-thresholds.d6  = thresholds.s6;
+thresholds.d03 = thresholds.s03;
+thresholds.d06 = thresholds.s06;
 thresholds.d12 = thresholds.s12;
 thresholds.d24 = thresholds.s24;
 thresholds.tmp = [-16.1,-8.1,-4.1,-2.1,-0.1,1.9,3.9,7.9,15.9];
+thresholds.snw = [-999, -100, -80, -60, -40, -20, 0, 0, 0];
+thresholds.sns = thresholds.snw;
 
-const audio = document.getElementById('audio');
+const audio = document.querySelector('#audio');
 audio.volume = 0.6;
 audio.load();
 
@@ -106,61 +109,18 @@ let urlpre = '';
 if (location.host == 'localhost') urlpre = 'http://133.125.40.135/SnowWS/';
 
 
-////////////////////
-// initialization //
-////////////////////
+//////////////////////////
+// some async functions //
+//////////////////////////
 
-const initialize = function() {
-  const urlParam = location.search.substring(1);
-  let paramArray = [];
-  if (urlParam) {
-    const param = urlParam.split('&');
-    for (let i = 0; i < param.length; i++) {
-      const paramItem = param[i].split('=');
-      paramArray[paramItem[0]] = paramItem[1];
-    }
-    if (paramArray['a'] !== undefined) document.getElementById('area').value = paramArray['a'];
-    if (paramArray['o'] !== undefined) document.getElementById('orga').value = paramArray['o'];
-    if (paramArray['e'] !== undefined) document.getElementById('elem').value = paramArray['e'];
-    if (paramArray['i'] !== undefined) document.getElementById('init').value = paramArray['i'];
-    //if (paramArray['l'] == '1') $('#oto'              ).bootstrapToggle('on' );
-    if (paramArray['c'] == '0') $('#toggle_chohyo'    ).bootstrapToggle('off');
-    if (paramArray['g'] == '1') $('#toggle_minicharts').bootstrapToggle('on' );
-    if (paramArray['m'] == '0') $('#toggle_map'       ).bootstrapToggle('off');
-  }
+const changeinit = async function(amount) {
 
-  get_stations()
-    .then(get_list)
-    .then(function() {
-      changeinit(0);
-    })
-    .catch(function(error) { console.log(error); })
-}; // initialize
+  let ndest = timelist.indexOf(document.querySelector('#init').value) - amount;
 
-
-///////////////////////////////
-// process when init changes //
-///////////////////////////////
-
-const changeinit = function(amount) {
-
-  /* amount = 
-    98: move toward textbox value
-    else: move back or forward
-  */
-
-  let ndest = 0;
-  if (-90 <= amount && amount <= 90) {
-    ndest = timelist.indexOf(document.getElementById('init').value) - amount;
-    if (ndest < 0                  ) { return false; }
-    if (ndest > timelist.length - 1) { return false; }
-  }
-  else if (amount == 98) {
-    ndest = timelist.indexOf(document.getElementById('init').value);
-  }
+  if (amount == 99) ndest = 0;
 
   if (ndest < 0 || timelist.length - 1 < ndest) {
-    alert('ﾅｲﾖｰ (available times: between ' + timelist[timelist.length - 1] + ' and ' + timelist[0] + ')');
+    //alert('ﾅｲﾖｰ (available times: between ' + timelist[timelist.length - 1] + ' and ' + timelist[0] + ')');
     return false;
   }
 
@@ -170,153 +130,131 @@ const changeinit = function(amount) {
     $('#renew').bootstrapToggle('off');
   }
 
-  document.getElementById('init').value = timelist[ndest];
-  document.getElementById('init_f').disabled = !!(ndest == 0);
-  document.getElementById('init_b').disabled = !!(ndest == timelist.length - 1);
+  document.querySelector('#init').value = timelist[ndest];
+  document.querySelector('#init_f').disabled = !!(ndest == 0);
+  document.querySelector('#init_b').disabled = !!(ndest == timelist.length - 1);
 
-  get_values()
-    .then(redraw)
-    .catch(function(error) { console.log(error); });
+  await get(urlpre + 'sjisToUtf8.php?path=csv/Details_' + document.querySelector('#init').value + '.csv', onload.values).catch(console.log);
+  await redraw().catch(console.log);
 
 }; // changeinit
 
 
-const update = function() {
-  get_list()
-    .then(function() {
-      document.getElementById('init').value = timelist[0];
-      changeinit(0);
-    })
-    .catch(function(error) { console.log(error); })
+const update = async function(islatest) {
+  await get(urlpre + 'csv/_list.txt?_=' + new Date().getTime(), onload.list).catch(console.log);
+  let amount = 0;
+  if (islatest === undefined || islatest) amount = 99;
+  await changeinit(amount);
 }; // update
 
 
-const redraw = function(sortelem) {
-  draw_sheet(sortelem)
-    .then(draw_map)
-    .catch(function(error) { console.log(error); })
+const redraw = async function(sortelem) {
+  await draw_sheet(sortelem).catch(console.log);
+  await draw_map()          .catch(console.log);
 }; // redraw
 
 
-const change4redraw = function() {
-  set_point(-1);
+//////////////
+// get data //
+//////////////
 
-  draw_sheet()
-    .then(draw_map)
-    .catch(function(error) { console.log(error); })
-}; // change4redraw
+const onload = new Object();
 
+onload.list = function(res) {
+  timelist = res.replace(/[\r\n]/g, '').split(',');
+  if (document.querySelector('#init').value == '') document.querySelector('#init').value = timelist[0];
+  autoload();
+};
 
-const get_list = function() {
+onload.stations = function(res) {
+  const rows = res.trim().split('\r\n');
+  sta = [];
+  for (let i = 0; i < rows.length; i++) {
+    if (rows[i] == '') { break; }
+    sta[i] = rows[i].split(',');
+  }
+
+  icols.sta.key = sta[0].indexOf('検索キー');
+  icols.sta.prf = sta[0].indexOf('府県');
+  icols.sta.org = sta[0].indexOf('所属');
+  icols.sta.ctv = sta[0].indexOf('市町村');
+  icols.sta.cls = sta[0].indexOf('区分');
+  icols.sta.alt = sta[0].indexOf('標高');
+  icols.sta.obs = sta[0].indexOf('観測所名');
+  icols.sta.nam = sta[0].indexOf('情報発表名');
+  icols.sta.yom = sta[0].indexOf('読み');
+  icols.sta.lat = sta[0].indexOf('緯度');
+  icols.sta.lon = sta[0].indexOf('経度');
+  icols.sta.warningHour  = sta[0].indexOf('警報期間');
+  icols.sta.warningVal   = sta[0].indexOf('警報基準');
+  icols.sta.kirokuHour   = sta[0].indexOf('記録雪期間');
+  icols.sta.kirokuVal    = sta[0].indexOf('記録雪基準');
+  icols.sta.tanjikanHour = sta[0].indexOf('短時間期間');
+  icols.sta.tanjikanVal  = sta[0].indexOf('短時間基準');
+  icols.sta.sdWarning    = sta[0].indexOf('積雪厳重');
+  icols.sta.sdSpecial    = sta[0].indexOf('積雪特警');
+};
+
+onload.values = function(res) {
+  const rows = res.trim().split('\r\n');
+  val = [];
+  for (let i = 0; i < rows.length; i++) {
+    if (rows[i] == '') { break; }
+    val[i] = rows[i].split(',');
+  }
+
+  icols.val.nam = val[0].indexOf('情報発表名');
+  icols.val.s03 = val[1].indexOf('S3');
+  icols.val.s06 = val[1].indexOf('S6');
+  icols.val.s12 = val[1].indexOf('S12');
+  icols.val.s24 = val[1].indexOf('S24');
+  icols.val.d03 = val[1].indexOf('D3');
+  icols.val.d06 = val[1].indexOf('D6');
+  icols.val.d12 = val[1].indexOf('D12');
+  icols.val.d24 = val[1].indexOf('D24');
+  icols.val.s01 = val[0].indexOf('S1') + 24;
+  icols.val.snc = val[0].indexOf('積雪') + 24;
+  icols.val.tmp = val[0].indexOf('気温') + 24;
+  icols.val.ymd = val[0].indexOf('最新');
+  icols.val.snw = val[0].length;
+  icols.val.sns = val[0].length + 1;
+
+  let names_sta = new Array();
+  let names_val = new Array();
+  ival = [];
+  for (let i = 0; i < sta.length; i++) names_sta.push(sta[i][icols.sta.nam]);
+  for (let i = 0; i < val.length; i++) names_val.push(val[i][icols.val.nam]);
+  for (let i = 0; i < sta.length; i++) ival[i] = names_val.indexOf(names_sta[i]);
+};
+
+const get = function(path, func) {
   return new Promise(function(resolve, reject) {
+    document.querySelector('#initial').innerHTML += '<br />getting ' + path + '...';
     const req = new XMLHttpRequest();
-    const path = urlpre + 'csv/_list.txt?_=' + new Date().getTime();
     req.open('get', path, true);
     req.send(null);
     req.onload = function() {
-      timelist = req.responseText.replace(/[\r\n]/g, '').split(',');
-      if (document.getElementById('init').value == '') document.getElementById('init').value = timelist[0];
-      //console.log('done: get_list');
-      autoload();
+      func(req.responseText);
+      document.querySelector('#initial').innerHTML += ' done';
       resolve();
     }; // req.onload
     req.onerror = function() { reject(req.statusText); };
   });
-}; // get_list
+};
 
 
-const get_stations = function() {
-  return new Promise(function(resolve, reject) {
-    const req = new XMLHttpRequest();
-    const path = urlpre + 'sjisToUtf8.php?path=csv/stationplus.csv';
-    req.open('get', path, true);
-    req.send(null);
-    req.onload = function() {
-      const rows = req.responseText.trim().split('\r\n');
-      sta = [];
-      for (let i = 0; i < rows.length; i++) {
-        if (rows[i] == '') { break; }
-        sta[i] = rows[i].split(',');
-      }
-      icols.sta.key = sta[0].indexOf('検索キー');
-      icols.sta.prf = sta[0].indexOf('府県');
-      icols.sta.org = sta[0].indexOf('所属');
-      icols.sta.ctv = sta[0].indexOf('市町村');
-      icols.sta.cls = sta[0].indexOf('区分');
-      icols.sta.alt = sta[0].indexOf('標高');
-      icols.sta.obs = sta[0].indexOf('観測所名');
-      icols.sta.nam = sta[0].indexOf('情報発表名');
-      icols.sta.yom = sta[0].indexOf('読み');
-      icols.sta.jma = sta[0].indexOf('JMA番号');
-      icols.sta.qc  = sta[0].indexOf('気温JMA番号');
-      icols.sta.lat = sta[0].indexOf('緯度');
-      icols.sta.lon = sta[0].indexOf('経度');
-      icols.sta.warningHour  = sta[0].indexOf('警報期間');
-      icols.sta.warningVal   = sta[0].indexOf('警報基準');
-      icols.sta.kirokuHour   = sta[0].indexOf('記録雪期間');
-      icols.sta.kirokuVal    = sta[0].indexOf('記録雪基準');
-      icols.sta.tanjikanHour = sta[0].indexOf('短時間期間');
-      icols.sta.tanjikanVal  = sta[0].indexOf('短時間基準');
-      icols.sta.sdWarning    = sta[0].indexOf('積雪厳重');
-      icols.sta.sdSpecial    = sta[0].indexOf('積雪特警');
-      //console.log('done: get_stations');
-      resolve();
-    };
-    req.onerror = function() { reject(req.statusText); };
-  });
-}; // get_stations
-
-
-const get_values = function() {
-  return new Promise(function(resolve, reject) {
-    const req = new XMLHttpRequest();
-    const path = urlpre + 'sjisToUtf8.php?path=csv/Details_' + document.getElementById('init').value + '.csv';
-    req.open('get', path, true);
-    req.send(null);
-    req.onload = function() {
-      const rows = req.responseText.trim().split('\r\n');
-      val = [];
-      for (let i = 0; i < rows.length; i++) {
-        if (rows[i] == '') { break; }
-        val[i] = rows[i].split(',');
-      }
-      icols.val.nam = val[0].indexOf('情報発表名');
-      icols.val.s3  = val[1].indexOf('S3');
-      icols.val.s6  = val[1].indexOf('S6');
-      icols.val.s12 = val[1].indexOf('S12');
-      icols.val.s24 = val[1].indexOf('S24');
-      icols.val.d3  = val[1].indexOf('D3');
-      icols.val.d6  = val[1].indexOf('D6');
-      icols.val.d12 = val[1].indexOf('D12');
-      icols.val.d24 = val[1].indexOf('D24');
-      icols.val.s1  = val[0].indexOf('S1') + 24;
-      icols.val.snc = val[0].indexOf('積雪') + 24;
-      icols.val.tmp = val[0].indexOf('気温') + 24;
-      icols.val.ymd = val[0].indexOf('最新');
-
-      let names_sta = new Array();
-      let names_val = new Array();
-      for (let i = 0; i < sta.length; i++) names_sta.push(sta[i][icols.sta.nam]);
-      for (let i = 0; i < val.length; i++) names_val.push(val[i][icols.val.nam]);
-
-      for (let i = 0; i < sta.length; i++) ival[i] = names_val.indexOf(names_sta[i]);
-      console.log(ival);
-
-      //console.log('done: get_values');
-      resolve();
-    };
-    req.onerror = function() { reject(req.statusText); };
-  });
-}; // get_values
-
+////////////////////
+// draw functions //
+////////////////////
 
 const draw_sheet = function(sortelem) {
 
   return new Promise(function(resolve, reject) {
+    document.querySelector('#initial').innerHTML += '<br />drawing sheet...';
 
-    const init = document.getElementById('init').value;
-    const area = document.getElementById('area').value;
-    const orga = document.getElementById('orga').value;
+    const init = document.querySelector('#init').value;
+    const area = document.querySelector('#area').value;
+    const orga = document.querySelector('#orga').value;
 
     ///////////////////////////
     // generate table header //
@@ -397,7 +335,7 @@ const draw_sheet = function(sortelem) {
       sortelem = sortelemprev;
       isortupdown += 1;
       if (isortupdown >= 3) {
-        // reset to default when 3rd sort
+        // reset to default when 3rd change
         sortelem = undefined;
         isortupdown = 0;
       }
@@ -406,7 +344,8 @@ const draw_sheet = function(sortelem) {
       isortupdown = 1;
     }
 
-    const sortupdown = [0, -1, 1].map(x => x * ((sortelem == 'nam') ? -1 : 1))[isortupdown];
+    const issortdown = (sortelem == 'nam' || sortelem == 'snw' || sortelem == 'sns' || sortelem == 'tmp');
+    const sortupdown = [0, -1, 1].map(x => x * (issortdown ? -1 : 1))[isortupdown];
 
     ////////////////////
     // generate table //
@@ -414,7 +353,7 @@ const draw_sheet = function(sortelem) {
 
     let insert_rows = new Array(sta.length - 2);
 
-    let s3k = [], s6k = [], s6t = [], s12t = [];
+    let s03k = [], s06k = [], s06t = [], s12t = [];
 
     // generate value rows
     for (let irow = 2; irow < sta.length; irow++) {
@@ -433,14 +372,13 @@ const draw_sheet = function(sortelem) {
 
         if (h.name == '区分') {
           const tdappend = (
-            (solo.indexOf('平') >= 0) ? 'colG' :
-            (solo.indexOf('山') >= 0) ? 'colR' :
+            (judge_joho(irow) == 2) ? 'colG' :
+            (judge_joho(irow) == 3) ? 'colR' :
             (solo.indexOf('m未満') >= 0) ? 'colGlight' :
             (solo.indexOf('m以上') >= 0) ? 'colRlight' : 'colK'
           );
           tdclasses += ' ' + tdappend;
         } else if (h.name == '標高') {
-          tdclasses += ' alignright';
           solo = solo + '<span class="td-alt-unit">m</span>';
         } else if (h.name == '情報発表名') {
           const solo1 = solo.replace(/\(.+/g, '');
@@ -484,11 +422,12 @@ const draw_sheet = function(sortelem) {
 
           if (h.sub[i].indexOf('あ') == 0) {
             const s_val = ((h.sub[i] == 'あ厳') ? s_warning : s_special);
-            if (!judge_joho(irow) || s_val == '') {
+            if (judge_joho(irow) <= 0 || s_val == '') {
               solo = '-';
               solonum = NaN;
             } else {
               solonum = (s_val - 0) - solonum;
+              val[ival[irow]].push(solonum);
             }
           }
 
@@ -502,13 +441,13 @@ const draw_sheet = function(sortelem) {
             }
           } else if (h.sub[i] == 'S3'  && k_limit_hour ==  '3' && k_limit_val <= solonum) {
             tdclasses += ' joho';
-            s3k.push(irow);
+            s03k.push(irow);
           } else if (h.sub[i] == 'S6'  && k_limit_hour ==  '6' && k_limit_val <= solonum) {
             tdclasses += ' joho';
-            s6k.push(irow);
+            s06k.push(irow);
           } else if (h.sub[i] == 'S6'  && t_limit_hour ==  '6' && t_limit_val <= solonum) {
             tdclasses += ' joho';
-            s6t.push(irow);
+            s06t.push(irow);
           } else if (h.sub[i] == 'S12' && t_limit_hour == '12' && t_limit_val <= solonum) {
             tdclasses += ' joho';
             s12t.push(irow);
@@ -517,7 +456,7 @@ const draw_sheet = function(sortelem) {
           } else {
             let thin = '';
             if (h.name == '気温') thin = 't';
-            tdclasses += (' ' + thin + return_level(solonum, thresholds[h.sortelem[i]]));
+            tdclasses += (' ' + thin + return_level(solonum, h.sortelem[i]));
           }
   
           if (!isNaN(solonum)) solo = solonum + '<span class="soloflag">' + soloflag + '</span>';
@@ -538,13 +477,13 @@ const draw_sheet = function(sortelem) {
         if        (sortelem == 'nam') {
           sortval = sta[irow][icols.sta.yom] || 'ﾝ';
         } else if (sortelem == 'snw') {
-          if (sta[irow][icols.sta.sdWarning] == '' || !judge_joho(irow)) {
+          if (sta[irow][icols.sta.sdWarning] == '') {
             sortval = 999 * sortupdown;
           } else {
             sortval = sta[irow][icols.sta.sdWarning] - split_flag(val[ival[irow]][icols.val.snc])[0];
           }
         } else if (sortelem == 'sns') {
-          if (sta[irow][icols.sta.sdSpecial] == '' || !judge_joho(irow)) {
+          if (sta[irow][icols.sta.sdSpecial] == '') {
             sortval = 999 * sortupdown;
           } else {
             sortval = sta[irow][icols.sta.sdSpecial] - split_flag(val[ival[irow]][icols.val.snc])[0];
@@ -623,9 +562,9 @@ const draw_sheet = function(sortelem) {
     }
 
     alerttext = '';
-    alerttext += makealert('記録雪', 'S3' , s3k );
-    alerttext += makealert('記録雪', 'S6' , s6k );
-    alerttext += makealert('短時間', 'S6' , s6t );
+    alerttext += makealert('記録雪', 'S3' , s03k);
+    alerttext += makealert('記録雪', 'S6' , s06k);
+    alerttext += makealert('短時間', 'S6' , s06t);
     alerttext += makealert('短時間', 'S12', s12t);
 
     document.querySelector('#choka').innerHTML = alerttext;
@@ -650,10 +589,11 @@ const draw_sheet = function(sortelem) {
 
         if (!judge_row(irow)) continue;
 
-        const labelarray = val[0].slice(icols.val.s1 - 23, icols.val.s1 + 1);
+        const labelarray24 = val[0].slice(icols.val.s1 - 23, icols.val.s1 + 1);
+        const labelarray25 = val[0].slice(icols.val.s1 - 24, icols.val.s1 + 1);
 
-        const data1 = make_chartist_data('chart-snc', val[ival[irow]].slice(icols.val.snc - 23, icols.val.snc + 1), labelarray);
-        const data2 = make_chartist_data('chart-s01', val[ival[irow]].slice(icols.val.s1  - 23, icols.val.s1  + 1), labelarray);
+        const data1 = make_chartist_data('chart-snc', val[ival[irow]].slice(icols.val.snc - 24, icols.val.snc + 1), labelarray25);
+        const data2 = make_chartist_data('chart-s01', val[ival[irow]].slice(icols.val.s1  - 23, icols.val.s1  + 1), labelarray24);
 
         const config_common = {
           low: 0,
@@ -710,11 +650,11 @@ const draw_sheet = function(sortelem) {
       document.querySelector('#fixheader').style.left = (-1 * window.scrollX) + 'px';
     }, false);
 
-    const sheetWidth = document.querySelector('#sheet').clientWidth;
-    document.querySelector('#fixheader').style.width = sheetWidth + 'px';
+    document.querySelector('#fixheader').style.width = document.querySelector('#sheet').clientWidth + 'px';
 
     set_window();
 
+    document.querySelector('#initial').innerHTML += ' done';
     resolve();
 
   });
@@ -724,11 +664,14 @@ const draw_sheet = function(sortelem) {
 
 const draw_map = function() {
   return new Promise(function(resolve, reject) {
+    if (document.querySelector('#right_pane').style.display == 'none') resolve();
 
-    const init = document.getElementById('init').value;
-    const area = document.getElementById('area').value;
-    const elem = document.getElementById('elem').value;
-    const orga = document.getElementById('orga').value;
+    document.querySelector('#initial').innerHTML += '<br />drawing map...';
+
+    const init = document.querySelector('#init').value;
+    const area = document.querySelector('#area').value;
+    const elem = document.querySelector('#elem').value;
+    const orga = document.querySelector('#orga').value;
 
     if (map === undefined) {
       map = L.map('map_container', {
@@ -741,23 +684,33 @@ const draw_map = function() {
       });
 
       L.control.scale({
-        maxWidth:200,
-        position:'bottomright',
-        imperial:false
+        maxWidth: 200,
+        position: 'bottomright',
+        imperial: false,
       }).addTo(map);
 
       const gsiurl = "<a href='https://maps.gsi.go.jp/development/ichiran.html' target='_blank'>地理院タイル</a>";
 
-      const gsishiro = L.tileLayer('http://cyberjapandata.gsi.go.jp/xyz/blank/{z}/{x}/{y}.png', 
-        {attribution: gsiurl});
-      const gsi = L.tileLayer('http://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png', 
-        {attribution: gsiurl, opacity: 0.4});
-      const gsipale = L.tileLayer('http://cyberjapandata.gsi.go.jp/xyz/pale/{z}/{x}/{y}.png',
-        {attribution: gsiurl, opacity: 0.4});
-      const hyokou = L.tileLayer('http://cyberjapandata.gsi.go.jp/xyz/relief/{z}/{x}/{y}.png',
-        {attribution: gsiurl, opacity: 0.4});
-      const foto = L.tileLayer('http://cyberjapandata.gsi.go.jp/xyz/seamlessphoto/{z}/{x}/{y}.jpg',
-        {attribution: gsiurl});
+      const gsishiro = L.tileLayer(
+        'http://cyberjapandata.gsi.go.jp/xyz/blank/{z}/{x}/{y}.png',
+        { attribution: gsiurl }
+      );
+      const gsi = L.tileLayer(
+        'http://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png',
+        { attribution: gsiurl, opacity: 0.4 }
+      );
+      const gsipale = L.tileLayer(
+        'http://cyberjapandata.gsi.go.jp/xyz/pale/{z}/{x}/{y}.png',
+        { attribution: gsiurl, opacity: 0.4 }
+      );
+      const hyokou = L.tileLayer(
+        'http://cyberjapandata.gsi.go.jp/xyz/relief/{z}/{x}/{y}.png',
+        { attribution: gsiurl, opacity: 0.4 }
+      );
+      const foto = L.tileLayer(
+        'http://cyberjapandata.gsi.go.jp/xyz/seamlessphoto/{z}/{x}/{y}.jpg',
+        { attribution: gsiurl }
+      );
 
       const baseMaps = {
         "白地図": gsishiro,
@@ -769,6 +722,8 @@ const draw_map = function() {
 
       layerControl = L.control.layers(baseMaps).addTo(map);
       gsishiro.addTo(map);
+
+      map.on('click', function() { set_point(0); });
     }
 
     if (irowprev == -1) {
@@ -815,8 +770,8 @@ const draw_map = function() {
 
     const jmaelem = (
       (elem == 'snc') ? 'snowd' :
-      (elem == 's3' ) ? 'snowf03h' :
-      (elem == 's6' ) ? 'snowf06h' :
+      (elem == 's03') ? 'snowf03h' :
+      (elem == 's06') ? 'snowf06h' :
       (elem == 's12') ? 'snowf12h' :
       (elem == 's24') ? 'snowf24h' : null
     );
@@ -864,14 +819,13 @@ const draw_map = function() {
       if (!judge_row(irow)) continue;
 
       const solo = val[irow][icols.val[elem]];
-
-      const className = 'M' + thin + return_level(solo, thresholds[elem]);
-      if (['MtlvX', 'Mtlv-'].indexOf(className) >= 0) continue;
+      if (solo === undefined || solo === '') continue;
+      if (elem == 'tmp' && solo == 'X') continue;
 
       markers[irow] = new L.marker(
         [sta[irow][icols.sta.lat], sta[irow][icols.sta.lon]], 
         { icon: L.divIcon({
-          html: '<span class="' + thin + 'M' + return_level(solo, thresholds[elem]) + '">' + split_flag(solo)[0] + '</span>'
+          html: '<span class="' + thin + 'M' + return_level(solo, elem) + '">' + solo + '</span>'
         })
         }
       ).bindTooltip(
@@ -891,17 +845,19 @@ const draw_map = function() {
     // add legend //
     ////////////////
 
-    const bararray = ['snc', 's3s6d3d6', 's12s24d12d24', 's1d1', 'tmp'];
+    const bararray = ['snc', 's01', 's03s06d03d06', 's12s24d12d24', 'tmp'];
     let bar;
     bararray.forEach(function(b) { if (b.indexOf(elem) >= 0) bar = b; });
 
-    legend = L.control({ position: 'bottomright' });
-    legend.onAdd = function() {
-      let img = L.DomUtil.create('img');
-      img.src = 'lib/img/bar_' + bar + '.png';
-      return img;
-    };
-    legend.addTo(map);
+    if (bar !== undefined) {
+      legend = L.control({ position: 'bottomright' });
+      legend.onAdd = function() {
+        let img = L.DomUtil.create('img');
+        img.src = 'lib/img/bar_' + bar + '.png';
+        return img;
+      };
+      legend.addTo(map);
+    }
 
     ////////////////////
     // postprocessing //
@@ -915,8 +871,7 @@ const draw_map = function() {
 
     map.invalidateSize();
 
-    map.on('click', function() { set_point(0); });
-
+    document.querySelector('#initial').innerHTML += ' done';
     resolve();
 
   });
@@ -952,7 +907,6 @@ const set_point = function(irow, ismove) {
   }
 
   map.invalidateSize();
-  markers.forEach(function(m) { m.closeTooltip(); });
 
   if (irow <= 0) return true;
 
@@ -961,10 +915,7 @@ const set_point = function(irow, ismove) {
     e.classList.add('point_selected_td');
   });
 
-  let lat = sta[irow][icols.sta.lat];
-  let lon = sta[irow][icols.sta.lon];
-
-  if (ismove) map.setView([lat, lon]);
+  if (ismove) map.setView([sta[irow][icols.sta.lat], sta[irow][icols.sta.lon]]);
 
   markers[irow].openPopup();
 
@@ -1022,7 +973,7 @@ const set_point = function(irow, ismove) {
   new Chartist.Bar ('#chartbig-s01', datas1  , configs1  );
   new Chartist.Line('#chartbig-tmp', datatemp, configtemp);
 
-  const init = document.getElementById('init').value;
+  const init = document.querySelector('#init').value;
   const behind_header = sta[irow][icols.sta.prf] + ' ' + sta[irow][icols.sta.nam] + ' ';
   const behind_footer = ' ～' + init.substring(4, 6) + '/' + init.substring(6, 8) + ' ' + init.substring(8, 10) + ':00';
 
@@ -1038,7 +989,7 @@ const set_point = function(irow, ismove) {
 ////////////////////
 
 const autoload = function(bool) {
-  if (bool === undefined) bool = document.getElementById("renew").checked || false;
+  if (bool === undefined) bool = document.querySelector('#renew').checked || false;
 
   if        ( bool && repeat === undefined) {
     repeat = setInterval(function() { update(); }, 300000);
@@ -1046,29 +997,29 @@ const autoload = function(bool) {
     clearInterval(repeat);
     repeat = undefined;
   }
-};
+}; // autoload
 
 
 const button1 = function(bool) {
-  if (bool === undefined) bool = document.getElementById('oto').checked || false;
+  if (bool === undefined) bool = document.querySelector('#oto').checked || false;
 
   if (alerttext != '' && bool) {
     audio.play();
-    document.getElementById('button1wrap').style.display = 'block';
+    document.querySelector('#button1wrap').style.display = 'block';
   }
-};
+}; // button1
 
 
 const button2 = function() {
   audio.pause();
   audio.currentTime = 0;
-};
+}; // button2
 
 
 const button3 = function() {
   button2();
-  document.getElementById('button1wrap').style.display = 'none';
-};
+  document.querySelector('#button1wrap').style.display = 'none';
+}; // button3
 
 
 const set_window = function() {
@@ -1220,8 +1171,43 @@ const return_url = function(irow) {
 }; // return_url
 
 
+const judge_joho = function(irow) {
+  switch (sta[irow][icols.sta.cls]) {
+    case '山沿い':
+    case '山間部':
+    case '山地': return 3;
+    case '平地':
+    case '平野': return 2;
+    default: return 0;
+  }
+}; // judge_joho
+
+
+const judge_row = function(irow) {
+  const area = document.querySelector('#area').value;
+  const orga = document.querySelector('#orga').value;
+
+  if (!make_prefarray(area).some(function(e){ return e == sta[irow][icols.sta.prf]; })) return false;
+
+  if (ival[irow] === undefined || ival[irow] < 0) return false;
+
+  if (
+    (orga == 'all') ||
+    (orga == 'info' && judge_joho(irow) > 0) ||
+    (orga == 'jma'  && sta[irow][icols.sta.org] ==  '1') ||
+    (orga == 'ken'  && sta[irow][icols.sta.org] == '10') ||
+    (orga == 'mlit' && sta[irow][icols.sta.org] ==  '3') ||
+    (orga == 'atom' && sta[irow][icols.sta.org] =='100')
+  ) {
+    return true;
+  }
+
+  return false;
+}; // judge_row
+
+
 const split_flag = function(v) {
-  let vnum  = v.replace(/[F\)\]#]+/g  , '');
+  let vnum  = v.replace(/[F\)\]#]+/g, '');
   let vflag = v.replace(/[X0-9\.\-]+/g, '');
   return [vnum, vflag];
 }; // split_flag
@@ -1236,9 +1222,11 @@ const remove_flag_4array = function(array) {
 }; // remove_flag_4array
 
 
-const return_level = function(v, thr) {
-  v = split_flag(v)[0];
+const return_level = function(v, elem) {
+  v = split_flag(v + '')[0];
   if (v != 0 && isNaN(v)) return 'lvX';
+  let thr = thresholds[elem];
+  if (elem == 'snw' || elem == 'sns') v *= -1;
   for (let t = thr.length - 1; t >= 0; t--) {
     if (thr[t] < v) return 'lv' + (t + 1);
   }
@@ -1250,78 +1238,41 @@ const return_level = function(v, thr) {
 }; // return_level
 
 
-const judge_joho = function(irow) {
-  switch (sta[irow][icols.sta.cls]) {
-    case '平地':
-    case '山沿い':
-    case '山間部':
-    case '山地': return true;
-    default: return false;
-  }
-}; // judge_joho
-
-
-const judge_row = function(irow) {
-  const area = document.getElementById('area').value;
-  const orga = document.getElementById('orga').value;
-
-  if (!make_prefarray(area).some(function(e){ return e == sta[irow][icols.sta.prf]; })) return false;
-
-  if (ival[irow] === undefined || ival[irow] < 0) return false;
-
-  if (
-    (orga == 'all') ||
-    (orga == 'info' && judge_joho(irow)) ||
-    (orga == 'jma'  && sta[irow][icols.sta.org] ==  '1') ||
-    (orga == 'ken'  && sta[irow][icols.sta.org] == '10') ||
-    (orga == 'mlit' && sta[irow][icols.sta.org] ==  '3') ||
-    (orga == 'atom' && sta[irow][icols.sta.org] =='100')
-  ) {
-    return true;
-  }
-
-  return false;
-}; // judge_row
-
-
 const make_chartist_data = function(className, array, labelarray) {
-  let obj = {
+  return {
     labels: labelarray,
     series: [{
       className: className,
       data: remove_flag_4array(array)
     }]
   };
-  return obj;
 }; // make_chartist_data
 
 
 const search_chartist_maxmin = function(obj) {
-  let max = obj.series[0].data.reduce(function(a, b){ return Math.max((a - 0) || 0, (b - 0) || 0); });
-  let min = obj.series[0].data.reduce(function(a, b){ return Math.min((a - 0) || 0, (b - 0) || 0); });
+  const max = obj.series[0].data.reduce(function(a, b){ return Math.max((a - 0) || 0, (b - 0) || 0); });
+  const min = obj.series[0].data.reduce(function(a, b){ return Math.min((a - 0) || 0, (b - 0) || 0); });
   return [max, min];
 }; // search_chartist_maxmin
 
 
 const makeurl = function() {
 
-  const init = document.getElementById('init').value;
-  const area = document.getElementById('area').value;
-  const orga = document.getElementById('orga').value;
-  const elem = document.getElementById('elem').value;
+  const init = document.querySelector('#init').value;
+  const area = document.querySelector('#area').value;
+  const orga = document.querySelector('#orga').value;
+  const elem = document.querySelector('#elem').value;
 
   let urlstates = new Array();
   if (!!area && area != 'all') urlstates.push('a=' + area);
   if (!!orga && orga != 'all') urlstates.push('o=' + orga);
   if (!!elem && elem != 'snc') urlstates.push('e=' + elem);
-  //if ( document.querySelector('#oto'              ).checked) urlstates.push('l=1');
   if (!document.querySelector('#toggle_chohyo'    ).checked) urlstates.push('c=0');
   if ( document.querySelector('#toggle_minicharts').checked) urlstates.push('g=1');
   if (!document.querySelector('#toggle_map'       ).checked) urlstates.push('m=0');
 
   let urlstate = urlstates.join('&');
   if (urlstate.length > 0) urlstate = '?' + urlstate;
-  //urlstate = 'SnowView.html' + urlstate;
   urlstate = location.href.split('/').slice(-1)[0].split('?')[0] + urlstate;
   history.replaceState(null, null, urlstate);
   return urlstate;
@@ -1329,6 +1280,7 @@ const makeurl = function() {
 }; //function makeurl
 
 
+// change tile opacity
 const setOpacity = function() { jmatile.setOpacity(document.querySelector('#opacity').value); };
 
 
@@ -1342,40 +1294,61 @@ const cancel = function(id) { document.querySelector(id).style.display = 'none';
 
 window.onload = function() {
 
-  initialize();
+  (async function() {
+    const urlParam = location.search.substring(1);
+    let paramArray = [];
+    if (urlParam) {
+      const param = urlParam.split('&');
+      for (let i = 0; i < param.length; i++) {
+        const paramItem = param[i].split('=');
+        paramArray[paramItem[0]] = paramItem[1];
+      }
+      if (paramArray['a'] !== undefined) document.querySelector('#area').value = paramArray['a'];
+      if (paramArray['o'] !== undefined) document.querySelector('#orga').value = paramArray['o'];
+      if (paramArray['e'] !== undefined) document.querySelector('#elem').value = paramArray['e'];
+      if (paramArray['i'] !== undefined) document.querySelector('#init').value = paramArray['i'];
+      if (paramArray['c'] == '0') $('#toggle_chohyo'    ).bootstrapToggle('off');
+      if (paramArray['g'] == '1') $('#toggle_minicharts').bootstrapToggle('on' );
+      if (paramArray['m'] == '0') $('#toggle_map'       ).bootstrapToggle('off');
+    }
 
-  document.querySelector('#init_n').addEventListener('mouseup', function() { update();       });
+    await get(urlpre + 'sjisToUtf8.php?path=csv/stationplus.csv', onload.stations).catch(console.log);
+    await update(false);
+    document.querySelector('#initial').style.display = 'none';
+  })();
+
+  window.addEventListener('resize', set_window);
+
+  document.querySelector('#init_n').addEventListener('mouseup', update);
   document.querySelector('#init_b').addEventListener('mouseup', function() { changeinit(-1); });
   document.querySelector('#init_f').addEventListener('mouseup', function() { changeinit( 1); });
   document.querySelector('#init_e').addEventListener('mouseup', function() { changeinit( 0); });
 
-  document.querySelector('#area').addEventListener('change', function() { change4redraw(); });
-  document.querySelector('#orga').addEventListener('change', function() { change4redraw(); });
+  document.querySelector('#area').addEventListener('change', function() { set_point(-1); redraw(); });
+  document.querySelector('#orga').addEventListener('change', redraw);
+  document.querySelector('#elem').addEventListener('change', draw_map);
 
-  $('#oto'  ).change(function() { button1();  });
-  $('#renew').change(function() { autoload(); });
+  $('#oto'  ).change(button1);
+  $('#renew').change(autoload);
 
   $('#toggle_chohyo'    ).change(function() { set_window(); });
   $('#toggle_map'       ).change(function() { set_window(); });
-  $('#toggle_minicharts').change(function() { redraw(); });
-
-  document.querySelector('#elem').addEventListener('change', function() { draw_map(); });
+  $('#toggle_minicharts').change(function() { redraw();     });
 
   document.querySelector('#graph_close').addEventListener('mouseup', function() { set_point(0); });
 
-  document.querySelector('#button2').addEventListener('mouseup', function() { button2(); });
-  document.querySelector('#button3').addEventListener('mouseup', function() { button3(); });
+  document.querySelector('#button2').addEventListener('mouseup', button2);
+  document.querySelector('#button3').addEventListener('mouseup', button3);
 
-  document.querySelector('#usage'      ).addEventListener('mouseup', function() { usage(); });
+  document.querySelector('#usage'      ).addEventListener('mouseup', usage);
   document.querySelector('#usage_close').addEventListener('mouseup', function() { cancel('#usagewrap'); });
 
-  document.querySelector('#opacity').addEventListener('input' , function() { setOpacity(); });
-  document.querySelector('#opacity').addEventListener('change', function() { setOpacity(); });
-
-  window.addEventListener('resize', function() { set_window(); });
+  document.querySelector('#opacity').addEventListener('input' , setOpacity);
+  document.querySelector('#opacity').addEventListener('change', setOpacity);
 
   document.querySelector('#init').addEventListener('keydown', function(e) {
-    if (e.key === 'Enter') { changeinit(98); }
+    if (e.key === 'Enter') changeinit(98);
+    e.stopPropagation();
   });
 
   // click outside of dialogs to close them
@@ -1395,10 +1368,10 @@ window.onload = function() {
 
   document.body.addEventListener('keydown', function(e) {
 
-    if (e.key.indexOf('Left' ) >= 0 ) { changeinit(-1); }
-    if (e.key.indexOf('Right') >= 0 ) { changeinit( 1); }
-    if (e.ctrlKey && e.key.indexOf('Left' ) >= 0 ) { changeinit(-24); }
-    if (e.ctrlKey && e.key.indexOf('Right') >= 0 ) { changeinit( 24); }
+    if (e.key.indexOf('Left' ) >= 0) { changeinit(-1); }
+    if (e.key.indexOf('Right') >= 0) { changeinit( 1); }
+    if (e.ctrlKey && e.key.indexOf('Left' ) >= 0) { changeinit(-24); }
+    if (e.ctrlKey && e.key.indexOf('Right') >= 0) { changeinit( 24); }
 
     if (e.key == ' ' || e.key == 'Spacebar') { update(); }
 
@@ -1410,33 +1383,33 @@ window.onload = function() {
     document.querySelectorAll('#orga option').forEach(function(o){ orgas.push(o.value); });
     document.querySelectorAll('#elem option').forEach(function(o){ elems.push(o.value); });
 
-    const iareacurrent = areas.indexOf(document.getElementById('area').value);
+    const iareacurrent = areas.indexOf(document.querySelector('#area').value);
     if (e.shiftKey && e.key.indexOf('Up'  ) >= 0) {
-      document.getElementById('area').value = areas[Math.max(0, iareacurrent - 1)];
+      document.querySelector('#area').value = areas[Math.max(0, iareacurrent - 1)];
       redraw();
     }
     if (e.shiftKey && e.key.indexOf('Down') >= 0) {
-      document.getElementById('area').value = areas[Math.min(areas.length - 1, iareacurrent + 1)];
+      document.querySelector('#area').value = areas[Math.min(areas.length - 1, iareacurrent + 1)];
       redraw();
     }
     
-    const iorgacurrent = orgas.indexOf(document.getElementById('orga').value);
+    const iorgacurrent = orgas.indexOf(document.querySelector('#orga').value);
     if (e.altKey && e.key.indexOf('Up'  ) >= 0) {
-      document.getElementById('orga').value = orgas[Math.max(0, iorgacurrent - 1)];
+      document.querySelector('#orga').value = orgas[Math.max(0, iorgacurrent - 1)];
       redraw();
     }
     if (e.altKey && e.key.indexOf('Down') >= 0) {
-      document.getElementById('orga').value = orgas[Math.min(orgas.length - 1, iorgacurrent + 1)];
+      document.querySelector('#orga').value = orgas[Math.min(orgas.length - 1, iorgacurrent + 1)];
       redraw();
     }
 
-    const ielemcurrent = elems.indexOf(document.getElementById('elem').value);
+    const ielemcurrent = elems.indexOf(document.querySelector('#elem').value);
     if (e.ctrlKey && e.key.indexOf('Up'  ) >= 0) {
-      document.getElementById('elem').value = elems[Math.max(0, ielemcurrent - 1)];
+      document.querySelector('#elem').value = elems[Math.max(0, ielemcurrent - 1)];
       draw_map();
     }
     if (e.ctrlKey && e.key.indexOf('Down') >= 0) {
-      document.getElementById('elem').value = elems[Math.min(elems.length - 1, ielemcurrent + 1)];
+      document.querySelector('#elem').value = elems[Math.min(elems.length - 1, ielemcurrent + 1)];
       draw_map();
     }
 

@@ -1,15 +1,50 @@
+/* color properties */
+:root {
+    --lv0: #fff;
+    --lv1: #0ff;
+    --lv2: #0cf;
+    --lv3: #09f;
+    --lv4: #06f;
+    --lv5: #03f;
+    --lv6: #00f;
+    --lv7: #77f;
+    --lv8: #b7f;
+    --lv9: #f7e;
+    --lv-: #fed;
+    --lvX: #ddd;
+
+    --tlv0: #00c;
+    --tlv1: #05f;
+    --tlv2: #0af;
+    --tlv3: #0ff;
+    --tlv4: #cff;
+    --tlv5: #fff;
+    --tlv6: #fdd;
+    --tlv7: #fbb;
+    --tlv8: #f99;
+    --tlv9: #f66;
+}
+
+/* body */
 body {
-    min-width: 1000px;
+    min-width: 1100px;
     font-family: sans-serif;
     color: #333;
     font-size: 90%;
 }
 
+/* initial load indicator */
+#initial {
+    position: absolute;
+    display: block;
+    top: 50px;
+    left: 0;
+}
 
 /* navbar */
 .navbar {
     width: 100%;
-    min-width: 1000px;
+    min-width: 1100px;
     padding: 0;
     border-bottom: 1px solid #ccc !important;
 }
@@ -29,7 +64,7 @@ body {
 }
 #init_b, #init_f { width:  36px; }
 #init_e, #init_n { width:  72px; }
-#init, #area, #orga, #elem { width: 126px; font-size: 110%; padding-left: 2px; }
+#init, #area, #orga { width: 126px; font-size: 110%; padding-left: 2px; }
 #area { font-weight: bold; }
 #init_control, #area_control, #orga_control { margin-left: 10px; }
 
@@ -164,20 +199,15 @@ td { height: 32px; }
 .td-ymd { width: 100px; }
 .td-cht { width: 120px; }
 
-th.td-snc      { font-size: 85%; }
-th.td-snw      { font-size: 85%; }
-th.td-sns      { font-size: 85%; }
-th.td-snn      { font-size: 85%; }
-th.td-dnn      { font-size: 85%; }
-th.td-tmp      { font-size: 85%; }
+/* chohyo th */
+th.td-snc, th.td-snw, th.td-sns, th.td-tmp, th.td-snn, th.td-dnn, th.td-nam { cursor: pointer; }
+th.td-snc, th.td-snw, th.td-sns, th.td-tmp, th.td-snn, th.td-dnn { font-size: 80%; }
 
 th.td-ico span {
     font-size: 75%;
         writing-mode: vertical-rl;
     -ms-writing-mode: tb-rl;
 }
-
-th.td-nam, th.td-snc, th.td-sns, th.td-tmp, th.td-snn, th.td-dnn { cursor: pointer; }
 
 .up, .down {
     position: absolute;
@@ -190,32 +220,34 @@ th.td-nam, th.td-snc, th.td-sns, th.td-tmp, th.td-snn, th.td-dnn { cursor: point
 }
 .up   { top:    -3px; }
 .down { bottom: -3px; }
-
 .updown-selected { color: #f84; }
 
-td.td-prf      { font-weight: bold; }
-td.td-ctv      { font-size: 85%; }
-td.td-alt      { font-size: 75%; }
-td.td-cls      { font-size: 75%; }
-td.td-snn      { font-size: 85%; }
-td.td-dnn      { font-size: 85%; }
-td.td-tmp      { font-size: 85%; }
+/* chohyo td */
+td.td-prf { font-weight: bold; }
+td.td-ctv { font-size: 80%; }
+td.td-alt { font-size: 75%; text-align: right; }
+td.td-cls { font-size: 75%; }
+td.td-snn { font-size: 85%; }
+td.td-dnn { font-size: 85%; }
+td.td-tmp { font-size: 85%; }
 
 span.td-alt-unit { font-size: 75%; margin-left: 1px; margin-right: 3px; }
-span.td-nam-main { font-weight: bold; }
-.td-nam-sub  { height: 13px; margin-left: 3px; }
-.td-nam { line-height: 50%; }
-.td-nam-obs  { font-size: 70%; color: #888; }
 
-td.td-snw, td.td-sns { font-size:  80%; color: #666; }
-td.td-snc { font-size: 100%; font-weight: bold; }
+td.td-nam { line-height: 50%; }
+span.td-nam-main { font-weight: bold; }
+img.td-nam-sub { height: 13px; margin-left: 3px; }
+span.td-nam-obs { font-size: 70%; color: #888; }
+
+td.td-snw, td.td-sns { font-size: 80%; color: #666; }
+td.td-snc { font-weight: bold; }
+
 td.td-tmp { font-size:  85%; }
 
-.alignleft  { text-align: left;  }
-.alignright { text-align: right; }
+td.leftline { border-left: 1px solid #666; }
 
-td.leftline { border-left:   1px solid #666; }
+.set_point { cursor: pointer; }
 
+/* minicharts */
 .chart_container, .chart_container div[id^=chart] { width: 120px; height: 32px; }
 .chart_container { position: relative; }
 .chart_container div[id^=chart] { position: absolute; top: 0; left: 0; }
@@ -249,14 +281,13 @@ td.leftline { border-left:   1px solid #666; }
     text-align: center;
 }
 
-#collapse_control .btn {
-    font-size: 100%;
-}
+#collapse_control .btn { font-size: 90%; }
 
 
 /* right pane */
 #right_pane {
     position: fixed;
+    display: none;
     top: 0;
     right: 0;
     bottom: 0;
@@ -282,6 +313,8 @@ td.leftline { border-left:   1px solid #666; }
     z-index: 900;
     background-color: rgba(255, 255, 255, 0.8);
 }
+
+#elem { width: 180px; padding-left: 2px; }
 
 #opacity_control {
     z-index: 990;
@@ -319,6 +352,7 @@ td.leftline { border-left:   1px solid #666; }
 .tMlv7 { color: #e88; }
 .tMlv8 { color: #e77; }
 .tMlv9 { color: #e66; }
+.tMlvX { color: #999; }
 
 .leaflet-div-icon {
     position: absolute;
@@ -343,7 +377,7 @@ td.leftline { border-left:   1px solid #666; }
 
 .leaflet-popup-content {
     text-align: center;
-    margin: 12px;
+    margin: 10px;
     font-size: 15px;
 }
 
@@ -399,8 +433,6 @@ input[type=range]::-ms-tooltip {
     overflow-y: scroll;
 }
 
-.set_point { cursor: pointer; }
-
 div[id^=chartbig-] {
     position: relative;
     height: 33%;
@@ -418,6 +450,8 @@ span[id^=behind-chartbig-] {
     position: absolute;
     top:   5px;
     right: 5px;
+    width:  25px;
+    height: 25px;
     z-index: 100;
     cursor: pointer;
 }
@@ -487,7 +521,7 @@ span[id^=behind-chartbig-] {
 .popclose {
     z-index: 2010;
     position: absolute;
-    top: 10px;
+    top:   10px;
     right: 10px;
     width:  30px;
     height: 30px;

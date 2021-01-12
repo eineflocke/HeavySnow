@@ -35,6 +35,9 @@
 </head>
 <body>
 
+<!-- initial load indicator -->
+<div id="initial">[SnowView.html] Welcome back!</div>
+
 <!-- navbar -->
 <nav id="tabs" class="navbar navbar-light bg-light fixed-top">
     <div class="navbar-brand">
@@ -54,9 +57,8 @@
         <form id="area_control">
             <select id="area" class="form-control">
                 <option value="all" selected>全県</option>
-                <option value="hok">北陸</option>
-                <option value="ngtgnmngn">新潟+県境</option>
                 <option disabled>---</option>
+                <option value="hok">北陸</option>
                 <option value="ngt">新潟</option>
                 <option value="tym">富山</option>
                 <option value="isk">石川</option>
@@ -117,7 +119,7 @@
     <div id="map_container">
     </div>
     <div id="graph_container">
-        <img id="graph_close" src="lib/img/close.png" width="25" height="25" onclick="" />
+        <img id="graph_close" src="lib/img/close.png" />
         <div id="chartbig-snc"><span id="behind-chartbig-snc" class="col-snc"></span></div>
         <div id="chartbig-s01"><span id="behind-chartbig-s01" class="col-s01"></span></div>
         <div id="chartbig-tmp"><span id="behind-chartbig-tmp" class="col-tmp"></span></div>
@@ -125,16 +127,18 @@
     <form id="elem_control">
         <select id="elem" class="form-control">
             <option value="snc" selected>積雪深</option>
-            <option value="s1" >S1</option>
-            <option value="s3" >S3</option>
-            <option value="s6" >S6</option>
+            <option value="s01">S1</option>
+            <option value="s03">S3</option>
+            <option value="s06">S6</option>
             <option value="s12">S12</option>
             <option value="s24">S24</option>
-            <option value="d3" >D3</option>
-            <option value="d6" >D6</option>
+            <option value="d03">D3</option>
+            <option value="d06">D6</option>
             <option value="d12">D12</option>
             <option value="d24">D24</option>
             <option value="tmp">気温</option>
+            <option value="snw">あと何cm: 厳重警戒</option>
+            <option value="sns">あと何cm: 特別警報</option>
         </select>
         <span id="opacity_control">
             タイル

@@ -398,8 +398,8 @@ if "p" in symbols:
 
     invalid = -999
 
-    out = [["" for x in range(25)] for y in range(len(stations) + 2)]
-    det = [["" for x in range(85)] for y in range(len(stations) + 2)]
+    out = [[invalid for x in range(25)] for y in range(len(stations) + 2)]
+    det = [[invalid for x in range(85)] for y in range(len(stations) + 2)]
 
     out[0][ 0] = "情報発表名"
     out[0][ 1] = "積雪"
@@ -461,6 +461,9 @@ if "p" in symbols:
         sd25flag = [0       for x in range(25)]
 
         ymdhdata = ""
+
+        out[iout][0] = row[colname]
+        det[iout][0] = row[colname]
 
         if   row[colpref] in ["新潟", "富山", "石川", "福井"] and row[colorg] == "3":
             ########################################
@@ -685,7 +688,7 @@ if "p" in symbols:
                 mlit = None
 
                 for mlitdata in mlitjson["snowDatas"]:
-                    if row[colkey] == "佐久南気象観測局":
+                    if "佐久南気象観測局" in row[colname]:
                         mlitnum = (
                               mlitdata["station"]["managementNumber"]
                             + "."
@@ -1168,8 +1171,6 @@ if "p" in symbols:
         ### postprocessing ###
         ######################
 
-        out[iout][0] = row[colname]
-
         for backhour in range(23, -1, -1):
             #################
             ### QC for SD ###
@@ -1260,9 +1261,9 @@ if "p" in symbols:
 
             errorrate = [(i >= 2) for i in sd25flag[0:maxback]].count(True) / maxback
 
-            if   errorrate >= 0.2 or sfacc == invalid:
+            if   errorrate >= 0.4 or sfacc == invalid:
                 sfacc  = invalid
-            elif errorrate >= 0.1:
+            elif errorrate >= 0.2:
                 sfacc  = str(sfacc)  + "]"
             elif errorrate >  0.0:
                 sfacc  = str(sfacc)  + ")"
