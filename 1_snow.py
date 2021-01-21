@@ -38,7 +38,7 @@ mjstnow    = int(datetime.now().strftime("%M"))
 
 def usage():
     print(''' 
-usage: %s [abcdfghiklnoptuv] [yyyymmddhh in JST]
+usage: %s [abcdfghiklnoptuvw] [yyyymmddhh in JST]
 
 download mode: a = all
                mlit:
@@ -56,6 +56,7 @@ download mode: a = all
                 c = tochigi  (latest only)
                 u = aomori   (latest only)
                 v = aomori_at(latest only)
+                w = iwate    (latest only) <- New!
                j = jma-hp    (latest only)
                b = bufr      (time selectable)
 
@@ -266,6 +267,7 @@ if "d" in symbols:
 ### tochigi : json  / hourly    after 03min /  1h SD,     Temp ###
 ### aomori  : html  / hourly    after 45min / 24h SD, S1, Temp ###
 ### (atom)  : html  / every 10m after 10min /  1h SD           ###
+### iwate   : html  / hourly    after 10min / 24h SD, S1       ###
 ##################################################################
 
 if "n" in symbols:
@@ -350,6 +352,15 @@ if "v" in symbols:
     filename = "aomori_atom.html"
     downloader4latest(url, filename, 10, overwrite = False)
 
+if "w" in symbols:
+    for row in [x for x in stations if(x[colorg]=="10" and x[colpref]=="岩手")]:
+        url = "http://www.josetu.jp/iwate/public/DetailObs.aspx?A=" + row[colkey]
+        filename = "iwate_" + str(re.sub("=", "", row[colkey])) + ".html"
+        result = downloader4latest(url, filename, 10, overwrite = True)
+
+        if not result:
+            break
+
 ################################################
 ### jmahp                                    ###
 ### table / hourly after 05min / 1h SD, Temp ###
@@ -398,8 +409,8 @@ if "p" in symbols:
 
     invalid = -999
 
-    out = [[invalid for x in range(25)] for y in range(len(stations) + 2)]
-    det = [[invalid for x in range(85)] for y in range(len(stations) + 2)]
+    out = [[""      for x in range(25)] for y in range(len(stations) + 2)]
+    det = [[invalid for x in range(86)] for y in range(len(stations) + 2)]
 
     out[0][ 0] = "情報発表名"
     out[0][ 1] = "積雪"
@@ -427,27 +438,28 @@ if "p" in symbols:
         if backhour == 0 or backhour == 11 or ymdhback[8:10] == "01":
             out[0][22 - backhour] = ymdhback[6: 8]
 
-    det[0][ 0] = "情報発表名"
-    det[0][ 1] = "降雪深"
-    det[1][ 1] = "S3"
-    det[1][ 2] = "S6"
-    det[1][ 3] = "S12"
-    det[1][ 4] = "S24"
-    det[0][ 5] = "積雪深差"
-    det[1][ 5] = "D3"
-    det[1][ 6] = "D6"
-    det[1][ 7] = "D12"
-    det[1][ 8] = "D24"
-    det[0][ 9] = "S1"
-    det[0][34] = "積雪"
-    det[0][59] = "気温"
-    det[0][84] = "最新"
+    det[0][ 0] = "府県"
+    det[0][ 1] = "情報発表名"
+    det[0][ 2] = "降雪深"
+    det[1][ 2] = "S3"
+    det[1][ 3] = "S6"
+    det[1][ 4] = "S12"
+    det[1][ 5] = "S24"
+    det[0][ 6] = "積雪深差"
+    det[1][ 6] = "D3"
+    det[1][ 7] = "D6"
+    det[1][ 8] = "D12"
+    det[1][ 9] = "D24"
+    det[0][10] = "S1"
+    det[0][35] = "積雪"
+    det[0][60] = "気温"
+    det[0][85] = "最新"
 
     for backhour in range(0, 24+1, 1):
         ymdhback = ft2valid(ymdhjst, -1 * backhour, False, 0)
-        det[1][33 - backhour] = ymdhback[8:10]
-        det[1][58 - backhour] = ymdhback[8:10]
-        det[1][83 - backhour] = ymdhback[8:10]
+        det[1][34 - backhour] = ymdhback[8:10]
+        det[1][59 - backhour] = ymdhback[8:10]
+        det[1][84 - backhour] = ymdhback[8:10]
 
     #bufr25 = ["" for x in range(25)]
 
@@ -463,7 +475,9 @@ if "p" in symbols:
         ymdhdata = ""
 
         out[iout][0] = row[colname]
-        det[iout][0] = row[colname]
+
+        det[iout][0] = row[colpref]
+        det[iout][1] = row[colname]
 
         if   row[colpref] in ["新潟", "富山", "石川", "福井"] and row[colorg] == "3":
             ########################################
@@ -688,10 +702,10 @@ if "p" in symbols:
                 mlit = None
 
                 for mlitdata in mlitjson["snowDatas"]:
-                    if "佐久南気象観測局" in row[colname]:
+                    if ":" in row[colkey]:
                         mlitnum = (
                               mlitdata["station"]["managementNumber"]
-                            + "."
+                            + ":"
                             + mlitdata["station"]["subManagementNumber"]
                         )
 
@@ -1046,6 +1060,53 @@ if "p" in symbols:
                 except:
                     continue
 
+        elif row[colpref] in ["岩手"] and row[colorg] == "10":
+            ##########################
+            ### decoder for Iwate  ###
+            ##########################
+
+            for backhour in [2, 1, 0]:
+                ymdhback = ft2valid(ymdhjst, -1 * backhour, False, 0)
+                filepath = "raw/" + ymdhback + "/iwate_" + str(re.sub("=", "", row[colkey])) + ".html"
+
+                if not os.path.isfile(filepath):
+                    continue
+
+                try:
+                    soup     = BeautifulSoup(open(filepath, "r", encoding="utf-8"), "html.parser")
+                    iwate    = soup.find("table", id="tableObs").find_all("tr")
+                    iwate    = [x.find_all("td") for x in iwate]
+                    iwate    = [[x.get_text() for x in y] for y in iwate]
+
+                    #最新データが入っているかのチェック
+                    coltime_w = iwate[0].index("観測時刻")
+                    ymdhlatest = datetime.strptime(iwate[1][coltime_w], "%Y/%m/%d %H:00")
+                    dif_time = (datetime.strptime(ymdhback, "%Y%m%d%H") - ymdhlatest).seconds // 3600
+
+                    #25時間以上前のデータの場合は飛ばす
+                    if dif_time >= 25:
+                        continue
+
+                    backhours2 = range(backhour + max(dif_time, 0), backhour + 23)
+
+                    for backhour2 in backhours2:
+                        iwaterow = backhour2 - min(backhours2) + 1
+
+                        try:
+                            colsd_w   = iwate[0].index("積雪(cm)")
+                            sd25[backhour2] = int(iwate[iwaterow][colsd_w])
+                        except:
+                            pass
+
+                        try:
+                            colsf_w   = iwate[0].index("降雪(cm)")
+                            sf25[backhour2] = int(iwate[iwaterow][colsf_w])
+                        except:
+                            pass
+
+                except:
+                    pass
+
         elif row[colorg] == "1":
             #########################
             ### decoder for jmahp ###
@@ -1172,6 +1233,13 @@ if "p" in symbols:
         ######################
 
         for backhour in range(23, -1, -1):
+            ###################
+            ### QC for Temp ###
+            ###################
+
+            if abs(temp25[backhour]) > 50:
+                temp25[backhour] = invalid
+
             #################
             ### QC for SD ###
             #################
@@ -1179,58 +1247,44 @@ if "p" in symbols:
             if (
                     sd25    [backhour    ] == invalid
                 and sd25    [backhour + 1] != invalid
-                and sd25flag[backhour + 1] <= 5
+                and sd25flag[backhour + 1] <= 4
             ):
                 sd25    [backhour] = sd25[backhour + 1]
-                sf25    [backhour] = 0
-
-                if sd25flag[backhour + 1] >= 5:
-                    sd25flag[backhour] = 6
-                else:
-                    sd25flag[backhour] = 5
+                sf25    [backhour] = invalid
+                sd25flag[backhour] = 5
 
             #################
             ### QC for S1 ###
             #################
 
-            if sf25[backhour] == invalid:
+            if   sf25[backhour] == invalid:
                 if (
                         sd25[backhour    ] != invalid
                     and sd25[backhour + 1] != invalid
+                    and sd25flag[backhour] <= 4
                 ):
                     sf25[backhour] = max(0, sd25[backhour] - sd25[backhour + 1])
 
-            if sf25[backhour] < 0 and sf25[backhour] != invalid:
+                else:
+                    sd25flag[backhour] = 5
+
+            elif sf25[backhour] < 0:
                 sf25[backhour] = 0
 
-            if sf25[backhour] > 0:
+            elif sf25[backhour] > 0:
                 if (
                         sd25[backhour    ] != invalid
                     and sd25[backhour + 1] != invalid
+                    and sf25[backhour] > sd25[backhour] - sd25[backhour + 1]
                 ):
-                    if sf25[backhour] > sd25[backhour] - sd25[backhour + 1]:
-                        sf25[backhour] = max(0, sd25[backhour] - sd25[backhour + 1])
-
-            if (
-                    sd25[backhour + 1] == 0
-                and sf25[backhour] > 0
-                and temp25[backhour] >= 4.0
-            ):
-                sf25    [backhour] = 0
-                sd25    [backhour] = min(sd25[backhour], sd25[backhour + 1])
-                sd25flag[backhour] = 1
+                    sf25[backhour] = max(0, sd25[backhour] - sd25[backhour + 1])
 
             if sf25[backhour] >= 22:
                 sd25flag[backhour] = 4
 
             if sf25[backhour] >= 100:
+                sf25    [backhour] = invalid
                 sd25flag[backhour] = 5
-
-            if sd25flag[backhour] >= 5:
-                sf25[backhour] = invalid
-
-            if sf25[backhour] == invalid:
-                sd25flag[backhour] = max(5, sd25flag[backhour])
 
         if row[colsd] == "":
             snowspare = invalid
@@ -1293,11 +1347,10 @@ if "p" in symbols:
         if ymdhdata != "":
             out[iout][24] = ymdhdata[4:]
 
-        det[iout][ 0] = out[iout][ 0]
-        det[iout][84] = out[iout][24]
+        det[iout][85] = out[iout][24]
 
         for icol in range(3, 10+1, 1):
-            det[iout][icol - 2] = out[iout][icol]
+            det[iout][icol - 1] = out[iout][icol]
 
         for backhour in range(0, 24+1, 1):
             sfsuffix = ""
@@ -1313,13 +1366,11 @@ if "p" in symbols:
                 sfsuffix = "#"
 
             if   sd25flag[backhour] == 5:
-                sdsuffix = ")"
-            elif sd25flag[backhour] >= 6:
                 sdsuffix = "]"
 
-            det[iout][33 - backhour] = str(sf25  [backhour]) + sfsuffix
-            det[iout][58 - backhour] = str(sd25  [backhour]) + sdsuffix
-            det[iout][83 - backhour] = str(temp25[backhour])
+            det[iout][34 - backhour] = str(sf25  [backhour]) + sfsuffix
+            det[iout][59 - backhour] = str(sd25  [backhour]) + sdsuffix
+            det[iout][84 - backhour] = str(temp25[backhour])
 
         for icol in range(len(out[iout])):
             if str(invalid) in str(out[iout][icol]):
@@ -1336,16 +1387,29 @@ if "p" in symbols:
     ### output csv ###
     ##################
 
-    outname = "csv/So_" + ymdhjst + ".csv"
+    if not os.path.isdir("csv"):
+        os.makedirs("csv")
 
-    if not os.path.isdir(os.path.dirname(outname)):
-        os.makedirs(os.path.dirname(outname))
+    outname = "csv/So_" + ymdhjst + ".csv"
 
     csv.writer(open(outname, "w", encoding="utf-8"), delimiter=",").writerows(out)
 
-    detname = "csv/Details_" + ymdhjst + ".csv"
+    regions = {
+        "all"     : None,
+        "hokuriku": ["新潟", "富山", "石川", "福井"],
+        "tohoku"  : ["青森", "岩手"]
+    }
 
-    csv.writer(open(detname, "w", encoding="shift_jis"), delimiter=",").writerows(det)
+    for region, prefs in regions.items():
+        det2 = []
+
+        for irow in range(len(det)):
+            if region == "all" or irow <= 1 or det[irow][0] in prefs:
+                det2.append(det[irow])
+
+        detname = "csv/" + region + "_" + ymdhjst + ".csv"
+
+        csv.writer(open(detname, "w", encoding="shift_jis"), delimiter=",").writerows(det2)
 
     printmsg("csv output done")
 
@@ -1353,8 +1417,8 @@ if "p" in symbols:
     ### make timelist ###
     #####################
 
-    timelist = glob.glob("csv/Details_20????????.csv")
-    timelist = [re.sub("csv/Details_", "", timelist[i]) for i in range(len(timelist))]
+    timelist = glob.glob("csv/all_20????????.csv")
+    timelist = [re.sub("csv/all_", "", timelist[i]) for i in range(len(timelist))]
     timelist = [re.sub("\.csv"       , "", timelist[i]) for i in range(len(timelist))]
     timelist = sorted(timelist)[::-1]
 

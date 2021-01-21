@@ -1,37 +1,63 @@
-/* color properties */
-:root {
-    --lv0: #fff;
-    --lv1: #0ff;
-    --lv2: #0cf;
-    --lv3: #09f;
-    --lv4: #06f;
-    --lv5: #03f;
-    --lv6: #00f;
-    --lv7: #77f;
-    --lv8: #b7f;
-    --lv9: #f7e;
-    --lv-: #fed;
-    --lvX: #ddd;
+/* color */
+.lv0 { background-color: #fff; }
+.lv1 { background-color: #0ff; }
+.lv2 { background-color: #0cf; }
+.lv3 { background-color: #09f; color: #fff; }
+.lv4 { background-color: #06f; color: #fff; }
+.lv5 { background-color: #03f; color: #fff; }
+.lv6 { background-color: #00f; color: #fff; }
+.lv7 { background-color: #77f; color: #fff; }
+.lv8 { background-color: #b7f; color: #fff; }
+.lv9 { background-color: #f7e; }
+.lv- { background-color: #fed; }
+.lvX { background-color: #ddd; }
 
-    --tlv0: #00c;
-    --tlv1: #05f;
-    --tlv2: #0af;
-    --tlv3: #0ff;
-    --tlv4: #cff;
-    --tlv5: #fff;
-    --tlv6: #fdd;
-    --tlv7: #fbb;
-    --tlv8: #f99;
-    --tlv9: #f66;
-}
+.Mlv0 { color: #333; }
+.Mlv1 { color: #0cc; }
+.Mlv2 { color: #0ad; }
+.Mlv3 { color: #08d; }
+.Mlv4 { color: #06f; }
+.Mlv5 { color: #03f; }
+.Mlv6 { color: #00f; }
+.Mlv7 { color: #66d; }
+.Mlv8 { color: #96d; }
+.Mlv9 { color: #e7e; }
+.Mlv- { color: #da8; }
+.MlvX { color: #999; }
+
+.tlv0 { background-color: #00c; color: #fff; }
+.tlv1 { background-color: #05f; color: #fff; }
+.tlv2 { background-color: #0af; color: #fff; }
+.tlv3 { background-color: #0ff; }
+.tlv4 { background-color: #cff; }
+.tlv5 { background-color: #fff; }
+.tlv6 { background-color: #fdd; }
+.tlv7 { background-color: #fbb; }
+.tlv8 { background-color: #f99; }
+.tlv9 { background-color: #f66; }
+.tlvX { background-color: #ddd; }
+
+.tMlv0 { color: #00e; }
+.tMlv1 { color: #05e; }
+.tMlv2 { color: #09e; }
+.tMlv3 { color: #0ee; }
+.tMlv4 { color: #9ee; }
+.tMlv5 { color: #bbb; }
+.tMlv6 { color: #eaa; }
+.tMlv7 { color: #e88; }
+.tMlv8 { color: #e77; }
+.tMlv9 { color: #e66; }
+.tMlvX { color: #999; }
+
 
 /* body */
 body {
     min-width: 1100px;
     font-family: sans-serif;
     color: #333;
-    font-size: 90%;
+    font-size: 14px;
 }
+
 
 /* initial load indicator */
 #initial {
@@ -39,7 +65,9 @@ body {
     display: block;
     top: 50px;
     left: 0;
+    font-family: Consolas, monospace;
 }
+
 
 /* navbar */
 .navbar {
@@ -55,16 +83,16 @@ body {
     margin-left: 10px;
     height: 24px;
     width:  48px;
-    font-size: 75%;
+    font-size: 11px;
 }
 
 #init_b, #init_f, #init_e, #init_n, #init, #area, #orga, #elem {
     height: 36px;
-    font-size: 90%;
+    font-size: 13px;
 }
 #init_b, #init_f { width:  36px; }
 #init_e, #init_n { width:  72px; }
-#init, #area, #orga { width: 126px; font-size: 110%; padding-left: 2px; }
+#init, #area, #orga { width: 126px; font-size: 15px; padding-left: 2px; }
 #area { font-weight: bold; }
 #init_control, #area_control, #orga_control { margin-left: 10px; }
 
@@ -88,13 +116,15 @@ button:disabled {
  100%{ color : #f33; }
 }
 
+
 /* chohyo */
-#chohyo { overflow-y: scroll; }
+#chohyo { position: relative; }
 
 #fixheader, #sheet {
     border-left:  2px solid #666;
     border-right: 2px solid #666;
     border-top:   2px solid #666;
+    box-sizing: border-box;
 }
 
 #fixheader {
@@ -104,7 +134,8 @@ button:disabled {
 }
 
 #sheet {
-    margin-top: 2px;
+    position: absolute;
+    top: 2px;
     border-bottom: 2px solid #666;
 }
 
@@ -152,56 +183,38 @@ td { height: 32px; }
 .colK      { background-color: rgba(  0,   0,   0, 0.5); color: #ffffff; }
 .colGray   { background-color: rgba(  0,   0,   0, 0.3); }
 
+.bold   { font-weight: bold; }
+.chuiho { font-weight: bold; background-color: #ff0 !important; color: #000 !important; }
+.keiho  { font-weight: bold; background-color: #f00 !important; color: #fff !important; }
+.tokkei { font-weight: bold; background-color: #000 !important; color: #fff !important; }
 .joho { font-weight: bold; animation: johoAnime 1s infinite alternate; }
 @keyframes johoAnime{
    0%{ color : #ff0000; background: #000000; }
  100%{ color : #ffffff; background: #ff0000; }
 }
 
-.lv0 { background-color: #fff; }
-.lv1 { background-color: #0ff; }
-.lv2 { background-color: #0cf; }
-.lv3 { background-color: #09f; color: #fff; }
-.lv4 { background-color: #06f; color: #fff; }
-.lv5 { background-color: #03f; color: #fff; }
-.lv6 { background-color: #00f; color: #fff; }
-.lv7 { background-color: #77f; color: #fff; }
-.lv8 { background-color: #b7f; color: #fff; }
-.lv9 { background-color: #f7e; }
-.lv- { background-color: #fed; }
-.lvX { background-color: #ddd; }
-
-.tlv0 { background-color: #00c; color: #fff; }
-.tlv1 { background-color: #05f; color: #fff; }
-.tlv2 { background-color: #0af; color: #fff; }
-.tlv3 { background-color: #0ff; }
-.tlv4 { background-color: #cff; }
-.tlv5 { background-color: #fff; }
-.tlv6 { background-color: #fdd; }
-.tlv7 { background-color: #fbb; }
-.tlv8 { background-color: #f99; }
-.tlv9 { background-color: #f66; }
-
-.td-prf { width:  50px; }
-.td-sec { width:  80px; }
-.td-ctv { width:  80px; }
 .td-cls { width:  65px; }
 .td-alt { width:  45px; }
+.td-prf { width:  50px; }
+.td-ctv { width:  80px; }
 .td-nam { width: 200px; }
 .td-ico { width:  25px; }
 .td-snc { width:  45px; }
-.td-snw { width:  35px; }
-.td-sns { width:  35px; }
+.td-atg { width:  35px; }
+.td-ats { width:  35px; }
 .td-snn { width:  35px; }
 .td-dnn { width:  35px; }
-.td-s01 { width:  35px; }
+.td-atx { width:  35px; }
 .td-tmp { width:  35px; }
-.td-ymd { width: 100px; }
 .td-cht { width: 120px; }
 
+.td-sec { width:  80px; }
+.td-ymd { width: 100px; }
+
+
 /* chohyo th */
-th.td-snc, th.td-snw, th.td-sns, th.td-tmp, th.td-snn, th.td-dnn, th.td-nam { cursor: pointer; }
-th.td-snc, th.td-snw, th.td-sns, th.td-tmp, th.td-snn, th.td-dnn { font-size: 80%; }
+th.td-snc, th.td-atg, th.td-ats, th.td-tmp, th.td-snn, th.td-dnn, th.td-atx, th.td-nam { cursor: pointer; }
+th.td-snc, th.td-atg, th.td-ats, th.td-tmp, th.td-snn, th.td-dnn, th.td-atx { font-size: 12px; }
 
 th.td-ico span {
     font-size: 75%;
@@ -215,37 +228,48 @@ th.td-ico span {
     width: 100%;
             transform: translateX(-50%);
     -webkit-transform: translateX(-50%);
-    font-size: 70%;
+    font-size: 10px;
     color: #ddd;
 }
 .up   { top:    -3px; }
 .down { bottom: -3px; }
 .updown-selected { color: #f84; }
 
-/* chohyo td */
-td.td-prf { font-weight: bold; }
-td.td-ctv { font-size: 80%; }
-td.td-alt { font-size: 75%; text-align: right; }
-td.td-cls { font-size: 75%; }
-td.td-snn { font-size: 85%; }
-td.td-dnn { font-size: 85%; }
-td.td-tmp { font-size: 85%; }
 
-span.td-alt-unit { font-size: 75%; margin-left: 1px; margin-right: 3px; }
+/* chohyo td */
+td.td-cls { font-size: 11px; }
+
+td.td-alt { font-size: 11px; text-align: right; }
+span.td-alt-unit {
+    font-size: 10px;
+    margin-left:  1px;
+    margin-right: 3px;
+}
+
+td.td-prf { font-weight: bold; }
+
+td.td-ctv { font-size: 11px; }
 
 td.td-nam { line-height: 50%; }
 span.td-nam-main { font-weight: bold; }
 img.td-nam-sub { height: 13px; margin-left: 3px; }
-span.td-nam-obs { font-size: 70%; color: #888; }
+span.td-nam-obs { font-size: 10px; color: #777; }
 
-td.td-snw, td.td-sns { font-size: 80%; color: #666; }
 td.td-snc { font-weight: bold; }
 
-td.td-tmp { font-size:  85%; }
+td.td-tmp { font-size: 11px; }
+
+td.td-snn { font-size: 12px; }
+
+td.td-dnn { font-size: 11px; }
+
+td.td-atx { font-size: 11px; line-height: 100%; }
+span.td-atx-sub { font-size: 10px; opacity: 0.8; }
 
 td.leftline { border-left: 1px solid #666; }
 
 .set_point { cursor: pointer; }
+
 
 /* minicharts */
 .chart_container, .chart_container div[id^=chart] { width: 120px; height: 32px; }
@@ -260,9 +284,9 @@ td.leftline { border-left: 1px solid #666; }
 .chart-s01 .ct-bar  { stroke: #018; stroke-width: 5px; }
 .chart-tmp .ct-line { stroke: #c30; stroke-width: 1px; }
 
-.col-snc { color: #0bf; font-size: 85%; }
-.col-s01 { color: #018; font-size: 85%; }
-.col-tmp { color: #c30; font-size: 85%; }
+.col-snc { color: #0bf; font-size: 12px; }
+.col-s01 { color: #018; font-size: 12px; }
+.col-tmp { color: #c30; font-size: 12px; }
 
 
 /* collapse control */
@@ -276,12 +300,12 @@ td.leftline { border-left: 1px solid #666; }
 }
 
 .collapse_elems {
-    font-size: 70%;
+    font-size: 10px;
     margin: 8px;
     text-align: center;
 }
 
-#collapse_control .btn { font-size: 90%; }
+#collapse_control .btn { font-size: 11px; }
 
 
 /* right pane */
@@ -293,6 +317,7 @@ td.leftline { border-left: 1px solid #666; }
     bottom: 0;
     width:  100%;
 }
+
 
 /* map */
 #map_container {
@@ -329,31 +354,6 @@ td.leftline { border-left: 1px solid #666; }
     display: none;
 }
 
-.Mlv0 { color: #333; }
-.Mlv1 { color: #0cc; }
-.Mlv2 { color: #0ad; }
-.Mlv3 { color: #08d; }
-.Mlv4 { color: #06f; }
-.Mlv5 { color: #03f; }
-.Mlv6 { color: #00f; }
-.Mlv7 { color: #66d; }
-.Mlv8 { color: #96d; }
-.Mlv9 { color: #e7e; }
-.Mlv- { color: #da8; }
-.MlvX { color: #999; }
-
-.tMlv0 { color: #00e; }
-.tMlv1 { color: #05e; }
-.tMlv2 { color: #09e; }
-.tMlv3 { color: #0ee; }
-.tMlv4 { color: #9ee; }
-.tMlv5 { color: #bbb; }
-.tMlv6 { color: #eaa; }
-.tMlv7 { color: #e88; }
-.tMlv8 { color: #e77; }
-.tMlv9 { color: #e66; }
-.tMlvX { color: #999; }
-
 .leaflet-div-icon {
     position: absolute;
     width:  20px !important;
@@ -382,8 +382,9 @@ td.leftline { border-left: 1px solid #666; }
 }
 
 .tooltiptext-small {
-    font-size: 80%;
+    font-size: 12px;
 }
+
 
 /* slider */
 input[type="range"] {
@@ -422,6 +423,7 @@ input[type=range]::-ms-tooltip {
     display: none;
 }
 
+
 /* big charts */
 #graph_container {
     position: absolute;
@@ -442,7 +444,7 @@ span[id^=behind-chartbig-] {
     position: absolute;
     top: 5px;
     left: 50px;
-    font-size: 100%;
+    font-size: 14px;
     font-weight: bold;
 }
 
@@ -497,7 +499,7 @@ span[id^=behind-chartbig-] {
     padding: 25px;
             transform: translateY(-50%) translateX(-50%);
     -webkit-transform: translateY(-50%) translateX(-50%);
-    font-size: 90%;
+    font-size: 12px;
     background-color: rgba(255, 255, 255, 1.0);
     text-align: center;
     border-radius: 10px;
@@ -529,7 +531,7 @@ span[id^=behind-chartbig-] {
 }
 
 #usagetitle {
-    font-size: 120%;
+    font-size: 15px;
     font-weight: bold;
 }
 
@@ -542,13 +544,13 @@ span[id^=behind-chartbig-] {
     padding: 25px;
             transform: translateY(-50%) translateX(-50%);
     -webkit-transform: translateY(-50%) translateX(-50%);
-    font-size: 90%;
+    font-size: 12px;
     background-color: rgba(255, 255, 255, 1.0);
     text-align: center;
     border-radius: 10px;
 }
 #choka {
-    font-size: 150%;
+    font-size: 16px;
     font-weight: bold;
     width: 700px;
     margin: 0 0 15px 0;

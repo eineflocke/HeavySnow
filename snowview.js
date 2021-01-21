@@ -1,66 +1,255 @@
 'use strict';
 
-//////////////////////////
-// define table columns //
-//////////////////////////
+//////////////////////////////////
+// global constants for setting //
+//////////////////////////////////
 
-const header_sta = [
-  {
-    name: '区分',
-      keys: 'cls',
-      classes: 'td-cls',
-  }, {
-    name: '標高',
-      keys: 'alt',
-      classes: 'td-alt',
-  }, {
-    name: '府県',
-      keys: 'prf',
-      classes: 'td-prf',
-  }, { 
-    name: '市町村',
-      keys: 'ctv',
-      classes: 'td-ctv',
-  }, {
-    name: '情報発表名',
-      keys: 'nam',
-      classes: 'td-nam',
-      sortelem: 'nam',
-  }
-];
+///////////////////
+// table columns //
+///////////////////
 
-const header_val = [
-  {
-    name: '積雪',
-      sub:  ['実況', 'あ厳', 'あ特'],
-      keys: ['snc', 'snc', 'snc'],
-      classes: ['td-snc leftline', 'td-snw', 'td-sns'],
-      sortelem: ['snc', 'snw', 'sns'],
-  }, {
-    name: '気温', 
-      sub:  ['実況'],
-      keys: ['tmp'],
-      classes: ['td-tmp leftline'],
-      sortelem: ['tmp'],
-  }, {
-    name: '降雪深', 
-      sub:  ['S3', 'S6', 'S12', 'S24'],
-      keys: ['s03', 's06', 's12', 's24'],
-      classes: ['td-snn td-s03 leftline', 'td-snn td-s06', 'td-snn td-s12', 'td-snn td-s24'],
-      sortelem: ['s03', 's06', 's12', 's24'],
-  }, {
-    name: '積雪深差', 
-      sub:  ['D3', 'D6', 'D12', 'D24'],
-      keys: ['d03', 'd06', 'd12', 'd24'],
-      classes: ['td-dnn td-d03 leftline', 'td-dnn td-d06', 'td-dnn td-d12', 'td-dnn td-d24'],
-      sortelem: ['d03', 'd06', 'd12', 'd24'],
+const header_sta = {
+  区分: {
+    key:     'cls',
+    classes: 'td-cls',
+  },
+  標高: {
+    key:     'alt',
+    classes: 'td-alt',
+  },
+  府県: {
+    key:     'prf',
+    classes: 'td-prf',
+  },
+  市町村: { 
+    key:     'ctv',
+    classes: 'td-ctv',
+  },
+  情報発表名: {
+    key:     'nam',
+    classes: 'td-nam',
   }
-];
+};
+
+const header_val = {
+  積雪: {
+    sub:     ['実況', 'あ厳', 'あ特'],
+    key:     ['snc', 'atg', 'ats'],
+    classes: ['td-snc leftline', 'td-atx td-atg leftline', 'td-atx td-ats'],
+  },
+  気温: {
+    sub:     ['実況'],
+    key:     ['tmp'],
+    classes: ['td-tmp leftline'],
+  },
+  降雪深: {
+    sub:     ['S1', 'S3', 'S6', 'S12', 'S24'],
+    key:     ['s01', 's03', 's06', 's12', 's24'],
+    classes: ['td-snn td-s01 leftline', 'td-snn td-s03', 'td-snn td-s06', 'td-snn td-s12', 'td-snn td-s24'],
+  },
+  差: {
+    sub:     ['D24'],
+    key:     ['d24'],
+    classes: ['td-dnn td-d24 leftline'],
+  },
+  あと何cm: {
+    sub:     ['注', '警', '短', '記'],
+    key:     ['atc', 'atw', 'att', 'atk'],
+    classes: ['td-atx td-atc leftline', 'td-atx td-atw', 'td-atx td-att', 'td-atx td-atk'],
+  }
+};
+
+//////////
+// area //
+//////////
+
+const arealist0 = {
+  all: {
+    name: '全県',
+    pref: ['青森', '岩手', '新潟', '富山', '石川', '福井', '栃木', '群馬', '長野', '東京', '神奈川', '山梨'],
+    latlon: [38.2, 138.5], zoom: 7
+  },
+  hok: {
+    name: '北陸',
+    pref: ['新潟', '富山', '石川', '福井'],
+    latlon: [37.0, 137.6], zoom: 8
+  },
+  ngt: {
+    name: '新潟',
+    pref: ['新潟'],
+    latlon: [37.6, 138.7], zoom: 9
+  },
+  tym: {
+    name: '富山',
+    pref: ['富山'],
+    latlon: [36.7, 137.3], zoom: 10
+  },
+  isk: {
+    name: '石川',
+    pref: ['石川'],
+    latlon: [36.8, 136.8], zoom: 9
+  },
+  fki: {
+    name: '福井',
+    pref: ['福井'],
+    latlon: [35.8, 136.1], zoom: 9
+  },
+  aomiwt: {
+    name: '青森・岩手',
+    pref: ['青森', '岩手'],
+    latlon: [40.2, 141.0], zoom: 8
+  },
+  aom: {
+    name: '青森',
+    pref: ['青森'],
+    latlon: [40.9, 140.8], zoom: 9
+  },
+  iwt: {
+    name: '岩手',
+    pref: ['岩手'],
+    latlon: [39.6, 141.4], zoom: 9
+  },
+  tcggnm: {
+    name: '栃木・群馬',
+    pref: ['栃木', '群馬'],
+    latlon: [36.6, 139.3], zoom: 9
+  },
+  ngn: {
+    name: '長野',
+    pref: ['長野'],
+    latlon: [36.1, 138.1], zoom: 9
+  }
+};
+
+const defaultArea = {
+  all:      'all',
+  hokuriku: 'hok',
+  tohoku:   'aomiwt',
+};
+
+const areaarray = {
+  all:      ['all', 'hok', 'ngt', 'tym', 'isk', 'fki', 'aomiwt', 'aom', 'iwt', 'tcggnm', 'ngn'],
+  hokuriku: ['hok', 'ngt', 'tym', 'isk', 'fki'],
+  tohoku:   ['aomiwt', 'aom', 'iwt'],
+};
+
+const alertTarget = {
+  all:      ['atw', 'att', 'atk'],
+  hokuriku: ['att', 'atk'],
+  tohoku:   ['atw'],
+};
+
+///////////////////
+// organizations //
+///////////////////
+
+const orgalist = {
+  general: {
+    all:  '全機関',
+    jma:  '気象庁',
+    mlit: '整備局',
+    ken:  '府県',
+  },
+  hokuriku: {
+    info: '情報対象',
+  },
+  tohoku: {
+    atom: '原子力',
+  }
+};
+
+/////////////////////////////
+// thresholds for coloring //
+/////////////////////////////
+
+const thresholds = {
+  snc: [0, 1, 10, 20, 40, 60, 80, 100, 150, 200],
+  s01: [0, 1, 2, 3, 4, 5, 6, 8, 10, 16],
+  s03: [0, 1, 2, 5, 10, 15, 20, 25, 30, 40],
+  s06: [0, 1, 2, 5, 10, 15, 20, 25, 30, 40],
+  s12: [0, 1, 4, 10, 20, 30, 40, 50, 60, 80],
+  s24: [0, 1, 4, 10, 20, 30, 40, 50, 60, 80],
+  d03: [0, 1, 2, 5, 10, 15, 20, 25, 30, 40],
+  d06: [0, 1, 2, 5, 10, 15, 20, 25, 30, 40],
+  d12: [0, 1, 4, 10, 20, 30, 40, 50, 60, 80],
+  d24: [0, 1, 4, 10, 20, 30, 40, 50, 60, 80],
+  tmp: [-999, -16, -8, -4, -2, 0, 2, 4, 8, 16],
+  atg: [-999, -100, -80, -60, -40, -20, -10, 0, 0, 0],
+  ats: [-999, -100, -80, -60, -40, -20, -10, 0, 0, 0],
+  atc: [-999, -10,  -8,  -6, -4, -2, 0, 0, 0, 0],
+  atw: [-999, -20, -15, -10, -5, -3, 0, 0, 0, 0],
+  att: [-999, -20, -15, -10, -5, -3, 0, 0, 0, 0],
+  atk: [-999, -15, -10,  -7, -5, -3, 0, 0, 0, 0],
+}
+
+///////////////////////
+// path to resources //
+///////////////////////
+
+const prefix_temp = location.href.split('').reverse().join('');
+const prefix_here = prefix_temp.slice(prefix_temp.indexOf('/')).split('').reverse().join('');
+
+const prefix = {
+  all:      prefix_here,
+  hokuriku: prefix_here,
+  tohoku:   'http://172.27.64.62/~jmanhm/SnowView/',
+};
+
+const filepath = {
+  list: {
+    all:      'csv/_list.txt',
+    hokuriku: 'csv/_list.txt',
+    tohoku:   'csv/_list.txt',
+  },
+  stations: {
+    all:      'csv/stationplus.csv',
+    hokuriku: 'csv/stationplus.csv',
+    tohoku:   'csv/stationplus.csv',
+  },
+  values: {
+    all:      'csv/all_',
+    hokuriku: 'csv/hokuriku_',
+    tohoku:   'csv/tohoku_',
+  },
+};
+
+if (location.host == 'localhost' || location.host == '133.125.40.135') {
+  const prefix_internet = 'http://133.125.40.135/SnowWS/';
+  prefix.all      = prefix_internet;
+  prefix.hokuriku = prefix_internet;
+  prefix.tohoku   = prefix_internet;
+}
+
+/////////////////////
+// other constants //
+/////////////////////
+
+const categoryName = {
+  atc: '注意報',
+  atw: '警報',
+  att: '短時間',
+  atk: '記録雪',
+};
+
+const className = {
+  atg: ' bold',
+  ats: ' tokkei',
+  atc: ' chuiho',
+  atw: ' keiho',
+  att: ' joho',
+  atk: ' joho',
+};
+
+const audio = document.querySelector('#audio');
+audio.volume = 0.6;
+audio.load();
 
 
 //////////////////////
 // global variables //
 //////////////////////
+
+let region;
 
 let timelist;
 let sta;
@@ -68,45 +257,23 @@ let val;
 let ival = new Array();
 
 let irowprev = -1;
-let sortelem;
 let sortelemprev;
 let isortupdown;
-
 let alerttext;
+
 let map;
-let legend;
-let markerlayer;
-let markers = new Array();
 let layerControl;
 let jmatile;
+let markerlayer;
+let markers = new Array();
+let legend;
 
 let repeat;
 
-const icols = new Object();
-icols.sta = new Object();
-icols.val = new Object();
-
-const thresholds = new Object();
-thresholds.snc = [0,9,19,39,59,79,99,149,199];
-thresholds.s01 = [0,1,2,3,4,5,7,9,15];
-thresholds.s03 = [0,1,4,9,14,19,24,29,39];
-thresholds.s06 = [0,1,4,9,14,19,24,29,39];
-thresholds.s12 = [0,3,9,19,29,39,49,59,79];
-thresholds.s24 = [0,3,9,19,29,39,49,59,79];
-thresholds.d03 = thresholds.s03;
-thresholds.d06 = thresholds.s06;
-thresholds.d12 = thresholds.s12;
-thresholds.d24 = thresholds.s24;
-thresholds.tmp = [-16.1,-8.1,-4.1,-2.1,-0.1,1.9,3.9,7.9,15.9];
-thresholds.snw = [-999, -100, -80, -60, -40, -20, 0, 0, 0];
-thresholds.sns = thresholds.snw;
-
-const audio = document.querySelector('#audio');
-audio.volume = 0.6;
-audio.load();
-
-let urlpre = '';
-if (location.host == 'localhost') urlpre = 'http://133.125.40.135/SnowWS/';
+const icols = {
+  sta: {},
+  val: {}
+};
 
 
 //////////////////////////
@@ -134,14 +301,14 @@ const changeinit = async function(amount) {
   document.querySelector('#init_f').disabled = !!(ndest == 0);
   document.querySelector('#init_b').disabled = !!(ndest == timelist.length - 1);
 
-  await get(urlpre + 'sjisToUtf8.php?path=csv/Details_' + document.querySelector('#init').value + '.csv', onload.values).catch(console.log);
-  await redraw().catch(console.log);
+  await get(prefix[region] + filepath.values[region] + document.querySelector('#init').value + '.csv', onload.values).catch(console.error);
+  await redraw().catch(console.error);
 
 }; // changeinit
 
 
 const update = async function(islatest) {
-  await get(urlpre + 'csv/_list.txt?_=' + new Date().getTime(), onload.list).catch(console.log);
+  await get(prefix[region] + filepath.list[region], onload.list).catch(console.error);
   let amount = 0;
   if (islatest === undefined || islatest) amount = 99;
   await changeinit(amount);
@@ -149,8 +316,8 @@ const update = async function(islatest) {
 
 
 const redraw = async function(sortelem) {
-  await draw_sheet(sortelem).catch(console.log);
-  await draw_map()          .catch(console.log);
+  await draw_sheet(sortelem).catch(console.error);
+  await draw_map()          .catch(console.error);
 }; // redraw
 
 
@@ -161,7 +328,7 @@ const redraw = async function(sortelem) {
 const onload = new Object();
 
 onload.list = function(res) {
-  timelist = res.replace(/[\r\n]/g, '').split(',');
+  timelist = res.trim().replace(/[\r\n]/g, '').split(',');
   if (document.querySelector('#init').value == '') document.querySelector('#init').value = timelist[0];
   autoload();
 };
@@ -185,14 +352,24 @@ onload.stations = function(res) {
   icols.sta.yom = sta[0].indexOf('読み');
   icols.sta.lat = sta[0].indexOf('緯度');
   icols.sta.lon = sta[0].indexOf('経度');
-  icols.sta.warningHour  = sta[0].indexOf('警報期間');
-  icols.sta.warningVal   = sta[0].indexOf('警報基準');
-  icols.sta.kirokuHour   = sta[0].indexOf('記録雪期間');
-  icols.sta.kirokuVal    = sta[0].indexOf('記録雪基準');
-  icols.sta.tanjikanHour = sta[0].indexOf('短時間期間');
-  icols.sta.tanjikanVal  = sta[0].indexOf('短時間基準');
-  icols.sta.sdWarning    = sta[0].indexOf('積雪厳重');
-  icols.sta.sdSpecial    = sta[0].indexOf('積雪特警');
+  icols.sta.atg = sta[0].indexOf('積雪厳重');
+  icols.sta.ats = sta[0].indexOf('積雪特警');
+  icols.sta.atc = {
+    hour: sta[0].indexOf('注意報期間'),
+    val:  sta[0].indexOf('注意報基準')
+  }
+  icols.sta.atw = {
+    hour: sta[0].indexOf('警報期間'),
+    val:  sta[0].indexOf('警報基準')
+  };
+  icols.sta.att = {
+    hour: sta[0].indexOf('短時間期間'),
+    val:  sta[0].indexOf('短時間基準')
+  };
+  icols.sta.atk = {
+    hour: sta[0].indexOf('記録雪期間'),
+    val:  sta[0].indexOf('記録雪基準')
+  };
 };
 
 onload.values = function(res) {
@@ -203,6 +380,7 @@ onload.values = function(res) {
     val[i] = rows[i].split(',');
   }
 
+  icols.val.prf = val[0].indexOf('府県');
   icols.val.nam = val[0].indexOf('情報発表名');
   icols.val.s03 = val[1].indexOf('S3');
   icols.val.s06 = val[1].indexOf('S6');
@@ -216,29 +394,46 @@ onload.values = function(res) {
   icols.val.snc = val[0].indexOf('積雪') + 24;
   icols.val.tmp = val[0].indexOf('気温') + 24;
   icols.val.ymd = val[0].indexOf('最新');
-  icols.val.snw = val[0].length;
-  icols.val.sns = val[0].length + 1;
+  icols.val.atg = val[0].length;
+  icols.val.ats = val[0].length + 1;
+  icols.val.atc = val[0].length + 2;
+  icols.val.atw = val[0].length + 3;
+  icols.val.att = val[0].length + 4;
+  icols.val.atk = val[0].length + 5;
 
   let names_sta = new Array();
   let names_val = new Array();
-  ival = [];
   for (let i = 0; i < sta.length; i++) names_sta.push(sta[i][icols.sta.nam]);
   for (let i = 0; i < val.length; i++) names_val.push(val[i][icols.val.nam]);
+  ival = [];
   for (let i = 0; i < sta.length; i++) ival[i] = names_val.indexOf(names_sta[i]);
 };
 
 const get = function(path, func) {
   return new Promise(function(resolve, reject) {
-    document.querySelector('#initial').innerHTML += '<br />getting ' + path + '...';
+    document.querySelector('#initial').innerHTML += '<br />getting ' + path + ' ...';
+    const path2 = 'sjisToUtf8.php?path=' + encodeURIComponent(path + '?_=' + new Date().getTime());
     const req = new XMLHttpRequest();
-    req.open('get', path, true);
+    req.open('get', path2, true);
     req.send(null);
+    /*
+    req.open('post', 'sjisToUtf8.php', true);
+    req.setRequestHeader('Content-Type', 'application/json');
+    const data = JSON.stringify({
+      path: path + '?_=' + new Date().getTime()
+    });
+    console.log(data);
+    req.send(data);
+    */
     req.onload = function() {
       func(req.responseText);
       document.querySelector('#initial').innerHTML += ' done';
       resolve();
     }; // req.onload
-    req.onerror = function() { reject(req.statusText); };
+    req.onerror = function() {
+      document.querySelector('#initial').innerHTML += ' failed';
+      reject(req.statusText);
+    };
   });
 };
 
@@ -264,20 +459,20 @@ const draw_sheet = function(sortelem) {
 
     insert += '<tr>';
 
-    header_sta.forEach(function(h) {
-      let solo = h.name;
-      let thattr = ' rowspan="2" class="' + h.classes + '"';
-      if (h.sortelem !== undefined) solo += '<span class="up">▲</span><span class="down">▼</span>';
-      if (h.name == '情報発表名') {
+    Object.keys(header_sta).forEach(function(key) {
+      const h = header_sta[key];
+      let solo = key;
+      if (h.key == 'nam') {
+        solo += '<span class="up">▲</span><span class="down">▼</span>';
         solo += '</th><th rowspan="2" class="td-ico"><span>取得元</span>';
       }
-      insert += '<th' + thattr + '>' + solo + '</th>';
+      insert += '<th rowspan="2" class="' + h.classes + '">' + solo + '</th>';
     });
 
-    header_val.forEach(function(h) {
-      let solo = h.name;
-      let thattr = ' colspan="' + h.sub.length + '"';
-      insert += '<th' + thattr + '>' + solo + '</th>';
+    Object.keys(header_val).forEach(function(key) {
+      const h = header_val[key];
+      let solo = key;
+      insert += '<th colspan="' + h.sub.length + '">' + solo + '</th>';
     });
 
     if (document.querySelector('#toggle_minicharts').checked) {
@@ -287,13 +482,12 @@ const draw_sheet = function(sortelem) {
     insert += '</tr>';
     insert += '<tr>';
 
-    header_val.forEach(function(h) {
+    Object.keys(header_val).forEach(function(key) {
+      const h = header_val[key];
       for (let i = 0; i < h.sub.length; i++) {
         let solo = h.sub[i];
-        let thattr = '';
-        thattr += ' class="' + h.classes[i] + '"';
         solo += '<span class="up">▲</span><span class="down">▼</span>';
-        insert += '<th' + thattr + '>' + solo + '</th>';
+        insert += '<th class="' + h.classes[i] + '">' + solo + '</th>';
       }
     });
 
@@ -302,22 +496,15 @@ const draw_sheet = function(sortelem) {
     document.querySelector('#fixheader').innerHTML = insert;
 
     // add event for sort
-    header_sta.forEach(function(h) {
-      if (h.sortelem !== undefined) {
-        document.querySelector('#fixheader th.td-' + h.sortelem).addEventListener('mouseup', function() {
-          redraw(h.sortelem);
-        });
-      }
-    });
+    document.querySelector('#fixheader th.td-nam').addEventListener('mouseup', function() { redraw('nam'); });
 
-    header_val.forEach(function(h) {
-      if (h.sortelem !== undefined) {
-        h.sortelem.forEach(function(hh) {
-          document.querySelector('#fixheader th.td-' + hh).addEventListener('mouseup', function() {
-            redraw(hh);
-          });
-        });
-      }
+    Object.keys(header_val).forEach(function(key) {
+      const h = header_val[key];
+      h.key.forEach(function(hh) {
+        const query = document.querySelector('#fixheader th.td-' + hh);
+        if (query === null) return true;
+        query.addEventListener('mouseup', function() { redraw(hh); });
+      });
     });
 
     //////////////////////
@@ -344,8 +531,12 @@ const draw_sheet = function(sortelem) {
       isortupdown = 1;
     }
 
-    const issortdown = (sortelem == 'nam' || sortelem == 'snw' || sortelem == 'sns' || sortelem == 'tmp');
-    const sortupdown = [0, -1, 1].map(x => x * (issortdown ? -1 : 1))[isortupdown];
+    const issortdownfirst = (
+      sortelem == 'nam' ||
+      (sortelem || '').indexOf('at') == 0 ||
+      sortelem == 'tmp'
+    );
+    const sortupdown = [0, -1, 1].map(x => x * (issortdownfirst ? -1 : 1))[isortupdown];
 
     ////////////////////
     // generate table //
@@ -353,7 +544,7 @@ const draw_sheet = function(sortelem) {
 
     let insert_rows = new Array(sta.length - 2);
 
-    let s03k = [], s06k = [], s06t = [], s12t = [];
+    let johoobjs = new Array();
 
     // generate value rows
     for (let irow = 2; irow < sta.length; irow++) {
@@ -363,26 +554,25 @@ const draw_sheet = function(sortelem) {
       let insert_row = '';
       insert_row += '<tr id="no' + irow + '">';
 
-      header_sta.forEach(function(h) {
-        let solo = sta[irow][icols.sta[h.keys]];
+      Object.keys(header_sta).forEach(function(key) {
+        const h = header_sta[key];
+        let solo = sta[irow][icols.sta[h.key]];
 
         let tdclasses = h.classes;
-
         tdclasses += ' set_point';
 
-        if (h.name == '区分') {
-          const tdappend = (
-            (judge_joho(irow) == 2) ? 'colG' :
-            (judge_joho(irow) == 3) ? 'colR' :
-            (solo.indexOf('m未満') >= 0) ? 'colGlight' :
-            (solo.indexOf('m以上') >= 0) ? 'colRlight' : 'colK'
+        if (key == '区分') {
+          const judge = judge_joho(irow);
+          tdclasses += (
+            (judge == 4) ? ' colR' :
+            (judge == 3) ? ' colG' :
+            (judge == 2) ? ' colRlight' :
+            (judge == 1) ? ' colGlight' : ' colK'
           );
-          tdclasses += ' ' + tdappend;
-        } else if (h.name == '標高') {
-          solo = solo + '<span class="td-alt-unit">m</span>';
-        } else if (h.name == '情報発表名') {
+        } else if (key == '標高') {
+          solo += '<span class="td-alt-unit">m</span>';
+        } else if (key == '情報発表名') {
           const solo1 = solo.replace(/\(.+/g, '');
-          //const solo2 = solo.substring(solo.indexOf('('));
           solo = '<span class="td-nam-main">' + solo1 + '</span>';
           let imgfile = '';
           if        (sta[irow][icols.sta.org] ==   '1') {
@@ -390,78 +580,97 @@ const draw_sheet = function(sortelem) {
           } else if (sta[irow][icols.sta.org] ==   '3') {
             imgfile = 'lib/img/logo_mlit.png';
           } else if (sta[irow][icols.sta.org] ==  '10') {
-            imgfile = 'lib/img/logo_pref_' + prefEnJa(sta[irow][icols.sta.prf]) + '.png';
+            imgfile = 'lib/img/logo_pref_' + prefJa2En(sta[irow][icols.sta.prf]) + '.png';
           } else if (sta[irow][icols.sta.org] == '100') {
             imgfile = 'lib/img/logo_atom.png';
           }
           solo += '<img src="' + imgfile + '" class="td-nam-sub" />';
-          if (sta[irow][icols.sta.prf] == '石川' && sta[irow][icols.sta.org] == '10') solo += '<br /><span class="td-nam-obs">（' + sta[irow][icols.sta.obs] + '）</span>';
+          if (sta[irow][icols.sta.obs] !== '') solo += '<br /><span class="td-nam-obs">（' + sta[irow][icols.sta.obs] + '）</span>';
           solo += '</td><td class="td-ico"><a href="' + return_url(irow) + '" target="_blank">&#x1f310;</a>';
         }
 
         insert_row += '<td class="' + tdclasses + '">' + solo + '</td>';
       });
 
-      header_val.forEach(function(h) {
+      Object.keys(header_val).forEach(function(key) {
+        const h = header_val[key];
         for (let i = 0; i < h.sub.length; i++) {
-          let solo = val[ival[irow]][icols.val[h.keys[i]]];
+          let solo = val[ival[irow]][icols.val[h.key[i]]];
 
-          let solonum  = split_flag(solo)[0];
-          let soloflag = split_flag(solo)[1];
-
-          const w_limit_hour = sta[irow][icols.sta.warningHour ];
-          const w_limit_val  = sta[irow][icols.sta.warningVal  ] - 0;
-          const k_limit_hour = sta[irow][icols.sta.kirokuHour  ];
-          const k_limit_val  = sta[irow][icols.sta.kirokuVal   ] - 0;
-          const t_limit_hour = sta[irow][icols.sta.tanjikanHour];
-          const t_limit_val  = sta[irow][icols.sta.tanjikanVal ] - 0;
-          const s_warning    = sta[irow][icols.sta.sdWarning   ];
-          const s_special    = sta[irow][icols.sta.sdSpecial   ];
-
-          let tdclasses = h.classes[i];
+          let tdclassplus = '';
 
           if (h.sub[i].indexOf('あ') == 0) {
-            const s_val = ((h.sub[i] == 'あ厳') ? s_warning : s_special);
-            if (judge_joho(irow) <= 0 || s_val == '') {
-              solo = '-';
-              solonum = NaN;
-            } else {
-              solonum = (s_val - 0) - solonum;
-              val[ival[irow]].push(solonum);
-            }
-          }
 
-          if        (solo == 'X' || solo == '-') {
-            tdclasses += ' lvX';
-          } else if (h.sub[i].indexOf('あ') == 0) {
-            if (solonum <= 0) {
-              tdclasses += ' joho';
+            solo = val[ival[irow]][icols.val['snc']];
+            let solonum  = split_flag(solo)[0];
+            const s_val = sta[irow][icols.sta[h.key[i]]];
+            if (s_val === '') {
+              solonum = '-';
+            } else if (isNaN(solonum)) {
+              solonum = 'X';
             } else {
-              tdclasses += ' lv0';
+              solonum = s_val - solonum;
+              if (solonum <= 0) {
+                tdclassplus = className[h.key[i]];
+              } else {
+                tdclassplus = ' lv0';
+              }
             }
-          } else if (h.sub[i] == 'S3'  && k_limit_hour ==  '3' && k_limit_val <= solonum) {
-            tdclasses += ' joho';
-            s03k.push(irow);
-          } else if (h.sub[i] == 'S6'  && k_limit_hour ==  '6' && k_limit_val <= solonum) {
-            tdclasses += ' joho';
-            s06k.push(irow);
-          } else if (h.sub[i] == 'S6'  && t_limit_hour ==  '6' && t_limit_val <= solonum) {
-            tdclasses += ' joho';
-            s06t.push(irow);
-          } else if (h.sub[i] == 'S12' && t_limit_hour == '12' && t_limit_val <= solonum) {
-            tdclasses += ' joho';
-            s12t.push(irow);
-          } else if (h.sub[i] == '最新') {
-            tdclasses += ' lv0';
+            solo = solonum;
+            val[ival[irow]][icols.val[h.key[i]]] = solonum;
+
+          } else if (key == 'あと何cm') {
+
+            let solonum  = '';
+            let soloflag = '';
+            const s_val = sta[irow][icols.sta[h.key[i]].val];
+            if (s_val === '') {
+              solonum = '-';
+            } else {
+              const hour = sta[irow][icols.sta[h.key[i]].hour] + '';
+              const key = 's' + (hour.length == 1 ? '0' : '') + hour;
+              solo = val[ival[irow]][icols.val[key]];
+              solonum = split_flag(solo)[0];
+              if (isNaN(solonum)) {
+                solonum = 'X';
+              } else {
+                solonum = s_val - solonum;
+                if (solonum <= 0) {
+                  tdclassplus = className[h.key[i]];
+                } else {
+                  //tdclassplus = ' ' + return_level(solonum, h.key[i]);
+                  tdclassplus = ' lv0';
+                }
+                soloflag = '<span class="td-atx-sub"><br />/' + hour + 'h</span>';
+              }
+            }
+            solo = solonum + soloflag;
+            val[ival[irow]][icols.val[h.key[i]]] = solonum;
           } else {
-            let thin = '';
-            if (h.name == '気温') thin = 't';
-            tdclasses += (' ' + thin + return_level(solonum, h.sortelem[i]));
-          }
-  
-          if (!isNaN(solonum)) solo = solonum + '<span class="soloflag">' + soloflag + '</span>';
 
-          insert_row += '<td class="' + tdclasses + '">' + solo + '</td>';
+            const atx = ['atk', 'att', 'atw', 'atc'];
+
+            for (let j = 0; j < 4; j++) {
+              if (tdclassplus != '') break;
+              if (!judge_limit(irow, h.sub[i], solo, atx[j])) continue;
+              tdclassplus = className[atx[j]];
+              if (alertTarget[region].indexOf(atx[j]) < 0) continue;
+              const johoobj = {
+                row: irow,
+                val: solo,
+                category: categoryName[atx[j]],
+                hour:  sta[irow][icols.sta[atx[j]].hour],
+                limit: sta[irow][icols.sta[atx[j]].val]
+              };
+              johoobjs.push(johoobj);
+              break;
+            }
+
+          }
+
+          if (tdclassplus == '') tdclassplus = ' ' + (key == '気温' ? 't' : '') + return_level(solo, h.key[i]);
+
+          insert_row += '<td class="' + h.classes[i] + tdclassplus + '">' + solo + '</td>';
         }
       });
 
@@ -475,19 +684,10 @@ const draw_sheet = function(sortelem) {
 
       if (sortelem !== undefined) {
         if        (sortelem == 'nam') {
-          sortval = sta[irow][icols.sta.yom] || 'ﾝ';
-        } else if (sortelem == 'snw') {
-          if (sta[irow][icols.sta.sdWarning] == '') {
-            sortval = 999 * sortupdown;
-          } else {
-            sortval = sta[irow][icols.sta.sdWarning] - split_flag(val[ival[irow]][icols.val.snc])[0];
-          }
-        } else if (sortelem == 'sns') {
-          if (sta[irow][icols.sta.sdSpecial] == '') {
-            sortval = 999 * sortupdown;
-          } else {
-            sortval = sta[irow][icols.sta.sdSpecial] - split_flag(val[ival[irow]][icols.val.snc])[0];
-          }
+          sortval = sta[irow][icols.sta.yom] || (sortupdown == 1 ? 'ﾝ' : 'ｱ');
+        } else if (sortelem.indexOf('at') == 0) {
+          sortval = val[ival[irow]][icols.val[sortelem]];
+          if (isNaN(sortval)) sortval = 999 * sortupdown;
         } else {
           sortval = split_flag(val[ival[irow]][icols.val[sortelem]])[0];
           if (sortval === '' || isNaN(sortval)) sortval = 999 * sortupdown;
@@ -544,33 +744,21 @@ const draw_sheet = function(sortelem) {
     // make alert text //
     /////////////////////
 
-    const makealert = function(attr, hour, attrary) {
-      let alertstr = '';
-      if (attrary.length !== 0) {
-        const attrcol = icols.val[hour.toLowerCase()];
-
-        for (let i = 0; i < attrary.length; i++) {
-          alertstr += '<tr>';
-          alertstr += '<td>' + attr + hour + '</td>';
-          alertstr += '<td>' + sta[attrary[i]][icols.sta.prf] + '-' + sta[attrary[i]][icols.sta.ctv] + '-' + sta[attrary[i]][icols.sta.cls] + '</td>';
-          alertstr += '<td>' + sta[attrary[i]][icols.sta.nam] + '</td>';
-          alertstr += '<td>' + hour + '実況&nbsp;&nbsp;' + val[ival[attrary[i]]][attrcol] + 'cm</td>';
-          alertstr += '</tr>';
-        }
-      }
-      return alertstr;
-    }
-
     alerttext = '';
-    alerttext += makealert('記録雪', 'S3' , s03k);
-    alerttext += makealert('記録雪', 'S6' , s06k);
-    alerttext += makealert('短時間', 'S6' , s06t);
-    alerttext += makealert('短時間', 'S12', s12t);
+    for (let i = 0; i < johoobjs.length; i++) {
+      const irow = johoobjs[i]['row'];
+      alerttext += '<tr>';
+      alerttext += '<td>' + johoobjs[i]['category'] + ' S' + johoobjs[i]['hour'] + '</td>';
+      alerttext += '<td>' + sta[irow][icols.sta.prf] + ' ' + sta[irow][icols.sta.cls] + '</td>';
+      alerttext += '<td>' + sta[irow][icols.sta.nam] + '</td>';
+      alerttext += '<td>S' + johoobjs[i]['hour'] + '実況 ' + johoobjs[i]['val'] + 'cm</td>';
+      alerttext += '</tr>';
+    }
 
     document.querySelector('#choka').innerHTML = alerttext;
 
-    if (alerttext != '' && init == timelist[0]) {
-      if (document.querySelector('#oto').checked) button1();
+    if (alerttext !== '' && init == timelist[0]) {
+      button1();
       document.querySelector('#alerttitle').classList.add('alertanim');
       document.querySelector('#alerttitle').setAttribute('title', '報知基準を満たしている地点があります。');
     } else {
@@ -578,7 +766,7 @@ const draw_sheet = function(sortelem) {
       document.querySelector('#alerttitle').removeAttribute('title');
     }
 
-    if (alerttext == '') { button3(); }
+    if (alerttext === '') button3();
 
     /////////////////////
     // draw minicharts //
@@ -589,11 +777,11 @@ const draw_sheet = function(sortelem) {
 
         if (!judge_row(irow)) continue;
 
-        const labelarray24 = val[0].slice(icols.val.s1 - 23, icols.val.s1 + 1);
-        const labelarray25 = val[0].slice(icols.val.s1 - 24, icols.val.s1 + 1);
+        const labelarray24 = val[0].slice(icols.val.s01 - 23, icols.val.s01 + 1);
+        const labelarray25 = val[0].slice(icols.val.s01 - 24, icols.val.s01 + 1);
 
         const data1 = make_chartist_data('chart-snc', val[ival[irow]].slice(icols.val.snc - 24, icols.val.snc + 1), labelarray25);
-        const data2 = make_chartist_data('chart-s01', val[ival[irow]].slice(icols.val.s1  - 23, icols.val.s1  + 1), labelarray24);
+        const data2 = make_chartist_data('chart-s01', val[ival[irow]].slice(icols.val.s01 - 23, icols.val.s01 + 1), labelarray24);
 
         const config_common = {
           low: 0,
@@ -655,6 +843,7 @@ const draw_sheet = function(sortelem) {
     set_window();
 
     document.querySelector('#initial').innerHTML += ' done';
+
     resolve();
 
   });
@@ -726,23 +915,7 @@ const draw_map = function() {
       map.on('click', function() { set_point(0); });
     }
 
-    if (irowprev == -1) {
-      let latlon;
-      let zoom;
-      switch (area) {
-        case 'all': latlon = [38.2, 138.5]; zoom = 7; break;
-        case 'ngt': latlon = [37.5, 138.8]; zoom = 8; break;
-        case 'tym': latlon = [36.7, 137.3]; zoom = 9; break;
-        case 'isk': latlon = [36.8, 136.8]; zoom = 9; break;
-        case 'fki': latlon = [35.8, 136.1]; zoom = 9; break;
-        case 'tcggnm': latlon = [36.6, 139.3]; zoom = 8; break;
-        case 'ngn': latlon = [36.2, 138.1]; zoom = 8; break;
-        case 'aom': latlon = [40.9, 140.8]; zoom = 8; break;
-        case 'hok': latlon = [36.5, 137.5]; zoom = 7; break;
-        case 'ngtgnmngn': latlon = [37.0, 138.6]; zoom = 8; break;
-      }
-      map.setView(latlon, zoom);
-    }
+    if (irowprev == -1) map.setView(arealist0[area].latlon, arealist0[area].zoom);
 
     ///////////////////////////////////
     // remove elements before adding //
@@ -807,20 +980,23 @@ const draw_map = function() {
     /////////////////////
 
     let thin = '';
-    let si = 'cm';
+    let unit = 'cm';
     if (elem == 'tmp') {
       thin = 't';
-      si = '℃';
+      unit = '℃';
     }
+
+    const elemQuery = document.querySelector('#elem');
+    const elemIndex = elemQuery.selectedIndex;
+    const elemText = elemQuery.options[elemIndex].text;
 
     markerlayer = new L.LayerGroup();
 
     for (let irow = 2; irow < sta.length; irow++) {
       if (!judge_row(irow)) continue;
 
-      const solo = val[irow][icols.val[elem]];
-      if (solo === undefined || solo === '') continue;
-      if (elem == 'tmp' && solo == 'X') continue;
+      let solo = val[ival[irow]][icols.val[elem]];
+      if (solo === undefined || solo === '-' || (elem == 'tmp' && solo == 'X')) continue;
 
       markers[irow] = new L.marker(
         [sta[irow][icols.sta.lat], sta[irow][icols.sta.lon]], 
@@ -829,11 +1005,16 @@ const draw_map = function() {
         })
         }
       ).bindTooltip(
-        '<strong>' + sta[irow][icols.sta.nam] + '</strong><br />',
+        '<strong>' + sta[irow][icols.sta.nam] + '</strong>',
         { direction: 'top' }
       ).bindPopup((
         '<strong>' + sta[irow][icols.sta.nam] + '</strong>'
         + '<br /><span class="tooltiptext-small">積雪深</span> <strong>' + val[ival[irow]][icols.val.snc] + '</strong> <span class="tooltiptext-small">cm</span>'
+        + (
+          elem == 'snc' ?
+          '' : 
+          '<br /><span class="tooltiptext-small">' + elemText + '</span> <strong>' + val[ival[irow]][icols.val[elem]] + '</strong> <span class="tooltiptext-small">' + unit + '</span>'
+        )
       )).addTo(markerlayer).on('click', function(e) { set_point(e.target.irow, true); });
 
       markers[irow].irow = irow;
@@ -872,6 +1053,7 @@ const draw_map = function() {
     map.invalidateSize();
 
     document.querySelector('#initial').innerHTML += ' done';
+
     resolve();
 
   });
@@ -917,14 +1099,14 @@ const set_point = function(irow, ismove) {
 
   if (ismove) map.setView([sta[irow][icols.sta.lat], sta[irow][icols.sta.lon]]);
 
-  markers[irow].openPopup();
+  if (markers[irow] !== undefined) markers[irow].openPopup();
 
-  const label24 = val[1].slice(10, 34);
-  const label25 = val[1].slice( 9, 34);
+  const label24 = val[1].slice(icols.val.snc - 23, icols.val.snc + 1);
+  const label25 = val[1].slice(icols.val.snc - 24, icols.val.snc + 1);
 
-  const datasd   = make_chartist_data('chartbig-snc', val[irow].slice(34, 59), label25);
-  const datas1   = make_chartist_data('chartbig-s01', val[irow].slice(10, 34), label24);
-  const datatemp = make_chartist_data('chartbig-tmp', val[irow].slice(59, 84), label25);
+  const datasnc = make_chartist_data('chartbig-snc', val[ival[irow]].slice(icols.val.snc - 24, icols.val.snc + 1), label25);
+  const datas01 = make_chartist_data('chartbig-s01', val[ival[irow]].slice(icols.val.s01 - 23, icols.val.s01 + 1), label24);
+  const datatmp = make_chartist_data('chartbig-tmp', val[ival[irow]].slice(icols.val.tmp - 24, icols.val.tmp + 1), label25);
 
   const config_common = {
     low: 0,
@@ -943,35 +1125,35 @@ const set_point = function(irow, ismove) {
     plugins: [],
   };
 
-  let configsd   = JSON.parse(JSON.stringify(config_common));
-  let configs1   = JSON.parse(JSON.stringify(config_common));
-  let configtemp = JSON.parse(JSON.stringify(config_common));
+  let configsnc = JSON.parse(JSON.stringify(config_common));
+  let configs01 = JSON.parse(JSON.stringify(config_common));
+  let configtmp = JSON.parse(JSON.stringify(config_common));
 
-  configsd  .plugins.push(Chartist.plugins.ctPointLabels());
-  configs1  .plugins.push(Chartist.plugins.ctPointLabels());
-  configtemp.plugins.push(Chartist.plugins.ctPointLabels());
+  configsnc.plugins.push(Chartist.plugins.ctPointLabels());
+  configs01.plugins.push(Chartist.plugins.ctPointLabels());
+  configtmp.plugins.push(Chartist.plugins.ctPointLabels());
 
-  configsd  .plugins.push(Chartist.plugins.ctAxisTitle({
+  configsnc.plugins.push(Chartist.plugins.ctAxisTitle({
     axisY: { offset: { x: 0, y: 15 }, flipTitle: true, axisTitle: '積雪深 [cm]' },
   }));
-  configs1  .plugins.push(Chartist.plugins.ctAxisTitle({
+  configs01.plugins.push(Chartist.plugins.ctAxisTitle({
     axisY: { offset: { x: 0, y: 15 }, flipTitle: true, axisTitle: 'S1 [cm]' },
   }));
-  configtemp.plugins.push(Chartist.plugins.ctAxisTitle({
+  configtmp.plugins.push(Chartist.plugins.ctAxisTitle({
     axisY: { offset: { x: 0, y: 15 }, flipTitle: true, axisTitle: '気温 [℃]' },
   }));
 
-  configsd.high   = Math.max( 8, 1.2 * search_chartist_maxmin(datasd  )[0]);
-  configs1.high   = Math.max( 8, 1.2 * search_chartist_maxmin(datas1  )[0]);
-  configtemp.high = Math.max( 0, 1.2 * search_chartist_maxmin(datatemp)[0]);
-  configtemp.low  = Math.min( 0, 1.2 * search_chartist_maxmin(datatemp)[1]);
+  configsnc.high = Math.max( 8, 1.2 * search_chartist_maxmin(datasnc)[0]);
+  configs01.high = Math.max( 8, 1.2 * search_chartist_maxmin(datas01)[0]);
+  configtmp.high = Math.max( 0, 1.2 * search_chartist_maxmin(datatmp)[0]);
+  configtmp.low  = Math.min( 0, 1.2 * search_chartist_maxmin(datatmp)[1]);
 
-  configsd  .axisX.labelOffset = { x: -7, y: 0 };
-  configtemp.axisX.labelOffset = { x: -7, y: 0 };
+  configsnc.axisX.labelOffset = { x: -7, y: 0 };
+  configtmp.axisX.labelOffset = { x: -7, y: 0 };
 
-  new Chartist.Line('#chartbig-snc', datasd  , configsd  );
-  new Chartist.Bar ('#chartbig-s01', datas1  , configs1  );
-  new Chartist.Line('#chartbig-tmp', datatemp, configtemp);
+  new Chartist.Line('#chartbig-snc', datasnc, configsnc);
+  new Chartist.Bar ('#chartbig-s01', datas01, configs01);
+  new Chartist.Line('#chartbig-tmp', datatmp, configtmp);
 
   const init = document.querySelector('#init').value;
   const behind_header = sta[irow][icols.sta.prf] + ' ' + sta[irow][icols.sta.nam] + ' ';
@@ -1003,7 +1185,9 @@ const autoload = function(bool) {
 const button1 = function(bool) {
   if (bool === undefined) bool = document.querySelector('#oto').checked || false;
 
-  if (alerttext != '' && bool) {
+  const init = document.querySelector('#init').value;
+
+  if (alerttext != '' && init == timelist[0] && bool) {
     audio.play();
     document.querySelector('#button1wrap').style.display = 'block';
   }
@@ -1028,7 +1212,7 @@ const set_window = function() {
 
   let navbarHeight = document.querySelector('#tabs').clientHeight + 'px';
   document.body.style['padding-top'] = navbarHeight;
-  document.querySelector('#chohyo'    ).style['top'] = navbarHeight;
+  //document.querySelector('#chohyo'    ).style['top'] = navbarHeight;
   document.querySelector('#right_pane').style['top'] = navbarHeight;
 
   if (document.querySelector('#toggle_chohyo').checked) {
@@ -1053,7 +1237,7 @@ const set_window = function() {
 }; // set_window
 
 
-const prefEnJa = function(str) {
+const prefJa2En = function(str) {
   switch (str) {
     case '青森'  : return 'aomori';
     case '岩手'  : return 'iwate';
@@ -1077,49 +1261,8 @@ const prefEnJa = function(str) {
     case '岐阜'  : return 'gifu';
     case '静岡'  : return 'shizuoka';
     case '愛知'  : return 'aichi';
-    case 'aomori'   : return '青森';
-    case 'iwate'    : return '岩手';
-    case 'miyagi'   : return '宮城';
-    case 'akita'    : return '秋田';
-    case 'yamagata' : return '山形';
-    case 'fukushima': return '福島';
-    case 'ibaraki'  : return '茨城';
-    case 'tochigi'  : return '栃木';
-    case 'gumma'    : return '群馬';
-    case 'saitama'  : return '埼玉';
-    case 'chiba'    : return '千葉';
-    case 'tokyo'    : return '東京';
-    case 'kanagawa' : return '神奈川';
-    case 'niigata'  : return '新潟';
-    case 'toyama'   : return '富山';
-    case 'ishikawa' : return '石川';
-    case 'fukui'    : return '福井';
-    case 'yamanashi': return '山梨';
-    case 'nagano'   : return '長野';
-    case 'gifu'     : return '岐阜';
-    case 'shizuoka' : return '静岡';
-    case 'aichi'    : return '愛知';
   }
-}; // prefEnJa
-
-
-const make_prefarray = function(area) {
-  let prefarray = new Array();
-  switch (area) {
-    case 'all' : prefarray = ['青森', '新潟', '富山', '石川', '福井', '栃木', '群馬', '長野', '東京', '千葉', '神奈川', '山梨', '埼玉']; break;
-    case 'hok' : prefarray = ['新潟', '富山', '石川', '福井']; break;
-    case 'ngtgnmngn' : prefarray = ['新潟', '群馬', '長野']; break;
-    case 'ngt' : prefarray = ['新潟']; break;
-    case 'tym' : prefarray = ['富山']; break;
-    case 'isk' : prefarray = ['石川']; break;
-    case 'fki' : prefarray = ['福井']; break;
-    case 'tcggnm' : prefarray = ['栃木', '群馬']; break;
-    case 'ngn' : prefarray = ['長野']; break;
-    case 'aom' : prefarray = ['青森']; break;
-    default: prefarray = [];
-  }
-  return prefarray;
-}; // make_prefarray
+}; // prefJa2En
 
 
 const return_url = function(irow) {
@@ -1159,7 +1302,9 @@ const return_url = function(irow) {
         case '栃木':
           return 'http://www.kendo.pref.tochigi.lg.jp/roadinfo/WeatherDetailInfo.aspx?validateSensors=NaturalSnow_&bordID=' + sta[irow][icols.sta.key];
         case '青森':
-          return 'http://www.koutsu-aomori.com/Road/yukijyoho.cgi/' + sta[irow][icols.sta.key].slice(-3);
+          return 'http://www.koutsu-aomori.com/Road/' + sta[irow][icols.sta.key];
+        case '岩手':
+          return 'http://www.josetu.jp/iwate/public/DetailObs.aspx?A=' + sta[irow][icols.sta.key];
         default:
           return null;
       }
@@ -1172,14 +1317,16 @@ const return_url = function(irow) {
 
 
 const judge_joho = function(irow) {
-  switch (sta[irow][icols.sta.cls]) {
-    case '山沿い':
-    case '山間部':
-    case '山地': return 3;
-    case '平地':
-    case '平野': return 2;
-    default: return 0;
-  }
+  const cls = sta[irow][icols.sta.cls];
+  const joho = (
+    (cls.indexOf('山'   ) == 0) ? 4 :
+    (cls.indexOf('平'   ) == 0) ? 3 :
+    (cls.indexOf('山'   ) >= 1) ? 2 :
+    (cls.indexOf('m以上') >= 0) ? 2 :
+    (cls.indexOf('平'   ) >= 1) ? 1 :
+    (cls.indexOf('m未満') >= 0) ? 1 : 0
+  );
+  return joho;
 }; // judge_joho
 
 
@@ -1187,17 +1334,17 @@ const judge_row = function(irow) {
   const area = document.querySelector('#area').value;
   const orga = document.querySelector('#orga').value;
 
-  if (!make_prefarray(area).some(function(e){ return e == sta[irow][icols.sta.prf]; })) return false;
+  if (arealist0[area].pref.indexOf(sta[irow][icols.sta.prf]) < 0) return false;
 
   if (ival[irow] === undefined || ival[irow] < 0) return false;
 
   if (
     (orga == 'all') ||
-    (orga == 'info' && judge_joho(irow) > 0) ||
-    (orga == 'jma'  && sta[irow][icols.sta.org] ==  '1') ||
-    (orga == 'ken'  && sta[irow][icols.sta.org] == '10') ||
-    (orga == 'mlit' && sta[irow][icols.sta.org] ==  '3') ||
-    (orga == 'atom' && sta[irow][icols.sta.org] =='100')
+    (orga == 'info' && judge_joho(irow) >= 3) ||
+    (orga == 'jma'  && sta[irow][icols.sta.org] ==   '1') ||
+    (orga == 'mlit' && sta[irow][icols.sta.org] ==   '3') ||
+    (orga == 'ken'  && sta[irow][icols.sta.org] ==  '10') ||
+    (orga == 'atom' && sta[irow][icols.sta.org] == '100')
   ) {
     return true;
   }
@@ -1206,9 +1353,18 @@ const judge_row = function(irow) {
 }; // judge_row
 
 
+const judge_limit = function(irow, sub, solo, sortelem) {
+  const solonum = split_flag(solo)[0];
+  const hour = sta[irow][icols.sta[sortelem].hour];
+  const val  = sta[irow][icols.sta[sortelem].val] - 0;
+  if (hour != '' && sub == ('S' + hour) && val <= solonum) return true;
+  return false;
+}; // judge_limit
+
+
 const split_flag = function(v) {
-  let vnum  = v.replace(/[F\)\]#]+/g, '');
-  let vflag = v.replace(/[X0-9\.\-]+/g, '');
+  const vnum  = v.replace(/[F\)\]#]+/g, '');
+  const vflag = v.replace(/[X0-9\.\-]+/g, '');
   return [vnum, vflag];
 }; // split_flag
 
@@ -1225,16 +1381,12 @@ const remove_flag_4array = function(array) {
 const return_level = function(v, elem) {
   v = split_flag(v + '')[0];
   if (v != 0 && isNaN(v)) return 'lvX';
-  let thr = thresholds[elem];
-  if (elem == 'snw' || elem == 'sns') v *= -1;
+  const thr = thresholds[elem];
+  if (elem.indexOf('at') == 0) v *= -1;
   for (let t = thr.length - 1; t >= 0; t--) {
-    if (thr[t] < v) return 'lv' + (t + 1);
+    if (thr[t] <= v) return 'lv' + t;
   }
-  if (v == thr[0]) {
-    return 'lv0';
-  } else {
     return 'lv-';
-  }
 }; // return_level
 
 
@@ -1264,7 +1416,8 @@ const makeurl = function() {
   const elem = document.querySelector('#elem').value;
 
   let urlstates = new Array();
-  if (!!area && area != 'all') urlstates.push('a=' + area);
+  if (region != 'all') urlstates.push('r=' + region);
+  if (!!area && area != defaultArea[region]) urlstates.push('a=' + area);
   if (!!orga && orga != 'all') urlstates.push('o=' + orga);
   if (!!elem && elem != 'snc') urlstates.push('e=' + elem);
   if (!document.querySelector('#toggle_chohyo'    ).checked) urlstates.push('c=0');
@@ -1277,7 +1430,7 @@ const makeurl = function() {
   history.replaceState(null, null, urlstate);
   return urlstate;
 
-}; //function makeurl
+}; // makeurl
 
 
 // change tile opacity
@@ -1295,41 +1448,74 @@ const cancel = function(id) { document.querySelector(id).style.display = 'none';
 window.onload = function() {
 
   (async function() {
-    const urlParam = location.search.substring(1);
+    const urlParam = location.search.substring(1) || '';
     let paramArray = [];
-    if (urlParam) {
-      const param = urlParam.split('&');
-      for (let i = 0; i < param.length; i++) {
-        const paramItem = param[i].split('=');
-        paramArray[paramItem[0]] = paramItem[1];
-      }
-      if (paramArray['a'] !== undefined) document.querySelector('#area').value = paramArray['a'];
-      if (paramArray['o'] !== undefined) document.querySelector('#orga').value = paramArray['o'];
-      if (paramArray['e'] !== undefined) document.querySelector('#elem').value = paramArray['e'];
-      if (paramArray['i'] !== undefined) document.querySelector('#init').value = paramArray['i'];
-      if (paramArray['c'] == '0') $('#toggle_chohyo'    ).bootstrapToggle('off');
-      if (paramArray['g'] == '1') $('#toggle_minicharts').bootstrapToggle('on' );
-      if (paramArray['m'] == '0') $('#toggle_map'       ).bootstrapToggle('off');
+    const param = urlParam.split('&');
+    for (let i = 0; i < param.length; i++) {
+      const paramItem = param[i].split('=');
+      paramArray[paramItem[0]] = paramItem[1];
     }
 
-    await get(urlpre + 'sjisToUtf8.php?path=csv/stationplus.csv', onload.stations).catch(console.log);
+    if (paramArray['r'] !== undefined) region = paramArray['r'];
+
+    let areas = {};
+    let orgas = {};
+
+    if (region == 'hokuriku') {
+      document.title += ' 北陸版';
+      orgas = { ...orgalist.general, ...orgalist.hokuriku };
+    } else if (region == 'tohoku') {
+      document.title += ' 東北版';
+      orgas = { ...orgalist.general, ...orgalist.tohoku };
+    } else {
+      region = 'all';
+      orgas = { ...orgalist.general, ...orgalist.hokuriku, ...orgalist.tohoku };
+    }
+
+    areaarray[region].forEach(function(area) {
+      areas[area] = arealist0[area].name;
+    });
+
+    const set_options = function(id, obj) {
+      Object.keys(obj).forEach(function(key) {
+        let opt = document.createElement('option');
+        opt.value = key;
+        opt.text  = obj[key];
+        document.querySelector(id).appendChild(opt);
+      });
+    };
+
+    set_options('#area', areas);
+    set_options('#orga', orgas);
+
+    if (paramArray['a'] === undefined) document.querySelector('#area').value = defaultArea[region];
+
+    if (paramArray['a'] !== undefined) document.querySelector('#area').value = paramArray['a'];
+    if (paramArray['o'] !== undefined) document.querySelector('#orga').value = paramArray['o'];
+    if (paramArray['e'] !== undefined) document.querySelector('#elem').value = paramArray['e'];
+    if (paramArray['i'] !== undefined) document.querySelector('#init').value = paramArray['i'];
+    if (paramArray['c'] == '0') $('#toggle_chohyo'    ).bootstrapToggle('off');
+    if (paramArray['g'] == '1') $('#toggle_minicharts').bootstrapToggle('on' );
+    if (paramArray['m'] == '0') $('#toggle_map'       ).bootstrapToggle('off');
+
+    await get(prefix[region] + filepath.stations[region], onload.stations).catch(console.error);
     await update(false);
     document.querySelector('#initial').style.display = 'none';
   })();
 
-  window.addEventListener('resize', set_window);
+  window.addEventListener('resize', function() { set_window(); });
 
-  document.querySelector('#init_n').addEventListener('mouseup', update);
+  document.querySelector('#init_n').addEventListener('mouseup', function() { update(); });
   document.querySelector('#init_b').addEventListener('mouseup', function() { changeinit(-1); });
   document.querySelector('#init_f').addEventListener('mouseup', function() { changeinit( 1); });
   document.querySelector('#init_e').addEventListener('mouseup', function() { changeinit( 0); });
 
   document.querySelector('#area').addEventListener('change', function() { set_point(-1); redraw(); });
-  document.querySelector('#orga').addEventListener('change', redraw);
-  document.querySelector('#elem').addEventListener('change', draw_map);
+  document.querySelector('#orga').addEventListener('change', function() { redraw(); });
+  document.querySelector('#elem').addEventListener('change', function() { draw_map(); });
 
-  $('#oto'  ).change(button1);
-  $('#renew').change(autoload);
+  $('#oto'  ).change(function() { button1();  });
+  $('#renew').change(function() { autoload(); });
 
   $('#toggle_chohyo'    ).change(function() { set_window(); });
   $('#toggle_map'       ).change(function() { set_window(); });
@@ -1337,17 +1523,17 @@ window.onload = function() {
 
   document.querySelector('#graph_close').addEventListener('mouseup', function() { set_point(0); });
 
-  document.querySelector('#button2').addEventListener('mouseup', button2);
-  document.querySelector('#button3').addEventListener('mouseup', button3);
+  document.querySelector('#button2').addEventListener('mouseup', function() { button2(); });
+  document.querySelector('#button3').addEventListener('mouseup', function() { button3(); });
 
-  document.querySelector('#usage'      ).addEventListener('mouseup', usage);
+  document.querySelector('#usage'      ).addEventListener('mouseup', function() { usage(); });
   document.querySelector('#usage_close').addEventListener('mouseup', function() { cancel('#usagewrap'); });
 
-  document.querySelector('#opacity').addEventListener('input' , setOpacity);
-  document.querySelector('#opacity').addEventListener('change', setOpacity);
+  document.querySelector('#opacity').addEventListener('input' , function() { setOpacity(); });
+  document.querySelector('#opacity').addEventListener('change', function() { setOpacity(); });
 
   document.querySelector('#init').addEventListener('keydown', function(e) {
-    if (e.key === 'Enter') changeinit(98);
+    if (e.key === 'Enter') changeinit(0);
     e.stopPropagation();
   });
 
@@ -1379,7 +1565,7 @@ window.onload = function() {
     let orgas = new Array();
     let elems = new Array();
 
-    document.querySelectorAll('#area option').forEach(function(o){ areas.push(o.value); });
+    document.querySelectorAll('#area option').forEach(function(o){ if (!o.disabled) areas.push(o.value); });
     document.querySelectorAll('#orga option').forEach(function(o){ orgas.push(o.value); });
     document.querySelectorAll('#elem option').forEach(function(o){ elems.push(o.value); });
 
@@ -1415,4 +1601,4 @@ window.onload = function() {
 
   });
 
-};
+}; // window.onload
