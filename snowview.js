@@ -4,69 +4,16 @@
 // global constants for setting //
 //////////////////////////////////
 
-///////////////////
-// table columns //
-///////////////////
-
-const header_sta = {
-  区分: {
-    key:     'cls',
-    classes: 'td-cls',
-  },
-  標高: {
-    key:     'alt',
-    classes: 'td-alt',
-  },
-  府県: {
-    key:     'prf',
-    classes: 'td-prf',
-  },
-  市町村: { 
-    key:     'ctv',
-    classes: 'td-ctv',
-  },
-  情報発表名: {
-    key:     'nam',
-    classes: 'td-nam',
-  }
-};
-
-const header_val = {
-  積雪: {
-    sub:     ['実況', 'あ厳', 'あ特'],
-    key:     ['snc', 'atg', 'ats'],
-    classes: ['td-snc leftline', 'td-atx td-atg leftline', 'td-atx td-ats'],
-  },
-  気温: {
-    sub:     ['実況'],
-    key:     ['tmp'],
-    classes: ['td-tmp leftline'],
-  },
-  降雪深: {
-    sub:     ['S1', 'S3', 'S6', 'S12', 'S24'],
-    key:     ['s01', 's03', 's06', 's12', 's24'],
-    classes: ['td-snn td-s01 leftline', 'td-snn td-s03', 'td-snn td-s06', 'td-snn td-s12', 'td-snn td-s24'],
-  },
-  差: {
-    sub:     ['D24'],
-    key:     ['d24'],
-    classes: ['td-dnn td-d24 leftline'],
-  },
-  あと何cm: {
-    sub:     ['注', '警', '短', '記'],
-    key:     ['atc', 'atw', 'att', 'atk'],
-    classes: ['td-atx td-atc leftline', 'td-atx td-atw', 'td-atx td-att', 'td-atx td-atk'],
-  }
-};
-
 //////////
 // area //
 //////////
 
+const areaArray = ['all', 'dummy', 'hok', 'ngt', 'tym', 'isk', 'fki', 'fkiplus', 'dummy', 'aomiwt', 'aom', 'iwt', 'dummy', 'tcggnm', 'ngn'];
+
 const arealist0 = {
   all: {
     name: '全県',
-    pref: ['青森', '岩手', '新潟', '富山', '石川', '福井', '栃木', '群馬', '長野', '東京', '神奈川', '山梨'],
+    pref: ['青森', '岩手', '新潟', '富山', '石川', '福井', '栃木', '群馬', '長野', '東京', '神奈川', '山梨', '岐阜', '滋賀', '京都'],
     latlon: [38.2, 138.5], zoom: 7
   },
   hok: {
@@ -94,6 +41,11 @@ const arealist0 = {
     pref: ['福井'],
     latlon: [35.8, 136.1], zoom: 9
   },
+  fkiplus: {
+    name: '福井+',
+    pref: ['福井', '滋賀', '京都'],
+    latlon: [35.8, 136.1], zoom: 9
+  },
   aomiwt: {
     name: '青森・岩手',
     pref: ['青森', '岩手'],
@@ -118,43 +70,69 @@ const arealist0 = {
     name: '長野',
     pref: ['長野'],
     latlon: [36.1, 138.1], zoom: 9
+  },
+  dummy: {
+    name: '---'
   }
 };
 
-const defaultArea = {
-  all:      'all',
-  hokuriku: 'hok',
-  tohoku:   'aomiwt',
-};
-
-const areaarray = {
-  all:      ['all', 'hok', 'ngt', 'tym', 'isk', 'fki', 'aomiwt', 'aom', 'iwt', 'tcggnm', 'ngn'],
-  hokuriku: ['hok', 'ngt', 'tym', 'isk', 'fki'],
-  tohoku:   ['aomiwt', 'aom', 'iwt'],
-};
-
-const alertTarget = {
-  all:      ['atw', 'att', 'atk'],
-  hokuriku: ['att', 'atk'],
-  tohoku:   ['atw'],
-};
-
 ///////////////////
-// organizations //
+// table columns //
 ///////////////////
 
-const orgalist = {
-  general: {
-    all:  '全機関',
-    jma:  '気象庁',
-    mlit: '整備局',
-    ken:  '府県',
+const header_sta0 = {
+  区分: {
+    key:     'cls',
+    classes: 'td-cls',
+  },/*
+  標高: {
+    key:     'alt',
+    classes: 'td-alt',
+  },*/
+  府県: {
+    key:     'prf',
+    classes: 'td-prf',
   },
-  hokuriku: {
-    info: '情報対象',
+  市町村: { 
+    key:     'ctv',
+    classes: 'td-ctv',
   },
-  tohoku: {
-    atom: '原子力',
+  情報発表名: {
+    key:     'nam',
+    classes: 'td-nam',
+  }
+};
+
+const header_val0 = {
+  積雪: {
+    sub:     ['実況', 'あ厳', 'あ特'],
+    key:     ['snc', 'atg', 'ats'],
+    classes: ['', 'td-atx leftline', 'td-atx'],
+  },
+  気温: {
+    sub:     ['実況'],
+    key:     ['tmp'],
+    classes: [''],
+  },
+  降雪深: {
+    sub:     [ 'S1',  'S3',  'S6', 'S12', 'S24'],
+    key:     ['s01', 's03', 's06', 's12', 's24'],
+    classes: Array(5).fill('td-snn'),
+  },
+  積雪深差: {
+    sub:     [ 'D3',  'D6', 'D12', 'D24'],
+    key:     ['d03', 'd06', 'd12', 'd24'],
+    classes: Array(4).fill('td-dnn'),
+  },
+  あと何cm: {
+    sub:     ['注', '警', '短', '記'],
+    key:     ['atc', 'atw', 'att', 'atk'],
+    classes: Array(4).fill('td-atx'),
+  },
+  S1: {
+    sub:     Array(24).fill(''),
+    key:     Array(24).fill('s1s'),
+    classes: Array(24).fill(''),
   }
 };
 
@@ -163,61 +141,47 @@ const orgalist = {
 /////////////////////////////
 
 const thresholds = {
-  snc: [0, 1, 10, 20, 40, 60, 80, 100, 150, 200],
-  s01: [0, 1, 2, 3, 4, 5, 6, 8, 10, 16],
-  s03: [0, 1, 2, 5, 10, 15, 20, 25, 30, 40],
-  s06: [0, 1, 2, 5, 10, 15, 20, 25, 30, 40],
-  s12: [0, 1, 4, 10, 20, 30, 40, 50, 60, 80],
-  s24: [0, 1, 4, 10, 20, 30, 40, 50, 60, 80],
-  d03: [0, 1, 2, 5, 10, 15, 20, 25, 30, 40],
-  d06: [0, 1, 2, 5, 10, 15, 20, 25, 30, 40],
-  d12: [0, 1, 4, 10, 20, 30, 40, 50, 60, 80],
-  d24: [0, 1, 4, 10, 20, 30, 40, 50, 60, 80],
-  tmp: [-999, -16, -8, -4, -2, 0, 2, 4, 8, 16],
-  atg: [-999, -100, -80, -60, -40, -20, -10, 0, 0, 0],
-  ats: [-999, -100, -80, -60, -40, -20, -10, 0, 0, 0],
-  atc: [-999, -10,  -8,  -6, -4, -2, 0, 0, 0, 0],
-  atw: [-999, -20, -15, -10, -5, -3, 0, 0, 0, 0],
-  att: [-999, -20, -15, -10, -5, -3, 0, 0, 0, 0],
-  atk: [-999, -15, -10,  -7, -5, -3, 0, 0, 0, 0],
-}
+  //lv-,   0,   1,   2,   3,   4,   5,   6,   7,   8,   9: chohyo
+  //     lv0,        2,        3,   4,   5,   6,   7     : tile, snowdepth
+  //     lv0,        1,        2,   3,   4,   5,   6,   7: tile, snowfall
+  snc: [-999,   1,   1,  10,  20,  50, 100, 150, 200, 250],
+  s01: [-999,   1,   2,   3,   4,   5,   6,   8,  10,  15],
+  s03: [-999,   1,   3,   4,   5,  10,  15,  20,  25,  30],
+  s06: [-999,   1,   5,   7,  10,  15,  20,  25,  30,  40],
+  s12: [-999,   1,   7,  10,  15,  20,  25,  30,  40,  50],
+  s24: [-999,   1,  10,  15,  20,  30,  40,  50,  60,  70],
+  d03: [   0,   1,   3,   4,   5,  10,  15,  20,  25,  30],
+  d06: [   0,   1,   5,   7,  10,  15,  20,  25,  30,  40],
+  d12: [   0,   1,   7,  10,  15,  20,  25,  30,  40,  50],
+  d24: [   0,   1,  10,  15,  20,  30,  40,  50,  60,  70],
+  atg: [-999, -50, -40, -30, -20, -10,   0,   0,   0,   0],
+  ats: [-999, -50, -40, -30, -20, -10,   0,   0,   0,   0],
+  atc: [-999, -10,  -8,  -6,  -4,  -2,   0,   0,   0,   0],
+  atw: [-999, -20, -15, -10,  -5,  -3,   0,   0,   0,   0],
+  att: [-999, -20, -15, -10,  -5,  -3,   0,   0,   0,   0],
+  atk: [-999, -15, -10,  -7,  -5,  -3,   0,   0,   0,   0],
+  tmp: [-999, -16,  -8,  -4,  -2,   0,   2,   4,   8,  16],
+};
+
+thresholds.s1s = thresholds.s01;
 
 ///////////////////////
 // path to resources //
 ///////////////////////
 
+const filepath = {
+  list:     'csv/_list.txt',
+  stations: 'csv/stationplus.csv',
+  values:   'csv/',
+};
+
 const prefix_temp = location.href.split('').reverse().join('');
 const prefix_here = prefix_temp.slice(prefix_temp.indexOf('/')).split('').reverse().join('');
 
-const prefix = {
-  all:      prefix_here,
-  hokuriku: prefix_here,
-  tohoku:   'http://172.27.64.62/~jmanhm/SnowView/',
-};
-
-const filepath = {
-  list: {
-    all:      'csv/_list.txt',
-    hokuriku: 'csv/_list.txt',
-    tohoku:   'csv/_list.txt',
-  },
-  stations: {
-    all:      'csv/stationplus.csv',
-    hokuriku: 'csv/stationplus.csv',
-    tohoku:   'csv/stationplus.csv',
-  },
-  values: {
-    all:      'csv/all_',
-    hokuriku: 'csv/hokuriku_',
-    tohoku:   'csv/tohoku_',
-  },
-};
+let prefix = prefix_here;
 
 if (location.host == 'localhost' || location.host == '133.125.40.135') {
-  const prefix_internet = 'http://133.125.40.135/SnowWS/';
-  prefix.all      = prefix_internet;
-  prefix.hokuriku = prefix_internet;
-  prefix.tohoku   = prefix_internet;
+  prefix = 'http://133.125.40.135/SnowWS/';
 }
 
 /////////////////////
@@ -249,8 +213,6 @@ audio.load();
 // global variables //
 //////////////////////
 
-let region;
-
 let timelist;
 let sta;
 let val;
@@ -266,13 +228,18 @@ let layerControl;
 let jmatile;
 let markerlayer;
 let markers = new Array();
-let legend;
 
 let repeat;
 
 const icols = {
   sta: {},
   val: {}
+};
+
+const daily = {
+  snc: {},
+  s24: {},
+  acc: {}
 };
 
 
@@ -287,8 +254,10 @@ const changeinit = async function(amount) {
   if (amount == 99) ndest = 0;
 
   if (ndest < 0 || timelist.length - 1 < ndest) {
-    //alert('ﾅｲﾖｰ (available times: between ' + timelist[timelist.length - 1] + ' and ' + timelist[0] + ')');
+    document.querySelector('#init').style['background-color'] = '#ffe0dd';
     return false;
+  } else {
+    document.querySelector('#init').style['background-color'] = '#fff';
   }
 
   if (ndest == 0) {
@@ -298,17 +267,19 @@ const changeinit = async function(amount) {
   }
 
   document.querySelector('#init').value = timelist[ndest];
-  document.querySelector('#init_f').disabled = !!(ndest == 0);
-  document.querySelector('#init_b').disabled = !!(ndest == timelist.length - 1);
+  document.querySelector('#init_f').disabled = !!(ndest <= 0);
+  document.querySelector('#init_b').disabled = !!(ndest >= timelist.length - 1);
+  document.querySelector('#init_ff').disabled = !!(ndest <= 23);
+  document.querySelector('#init_bb').disabled = !!(ndest >= timelist.length - 24);
 
-  await get(prefix[region] + filepath.values[region] + document.querySelector('#init').value + '.csv', onload.values).catch(console.error);
+  await get(prefix + filepath.values + document.querySelector('#init').value + '.csv', onload.values).catch(console.error);
   await redraw().catch(console.error);
 
 }; // changeinit
 
 
 const update = async function(islatest) {
-  await get(prefix[region] + filepath.list[region], onload.list).catch(console.error);
+  await get(prefix + filepath.list, onload.list).catch(console.error);
   let amount = 0;
   if (islatest === undefined || islatest) amount = 99;
   await changeinit(amount);
@@ -411,20 +382,11 @@ onload.values = function(res) {
 
 const get = function(path, func) {
   return new Promise(function(resolve, reject) {
-    document.querySelector('#initial').innerHTML += '<br />getting ' + path + ' ...';
-    const path2 = 'sjisToUtf8.php?path=' + encodeURIComponent(path + '?_=' + new Date().getTime());
+    const path2 = 'sjisToUtf8.php?path=' + encodeURIComponent(path + '?' + new Date().getTime());
+    document.querySelector('#initial').innerHTML += '<br />getting ' + path2 + ' ...';
     const req = new XMLHttpRequest();
     req.open('get', path2, true);
     req.send(null);
-    /*
-    req.open('post', 'sjisToUtf8.php', true);
-    req.setRequestHeader('Content-Type', 'application/json');
-    const data = JSON.stringify({
-      path: path + '?_=' + new Date().getTime()
-    });
-    console.log(data);
-    req.send(data);
-    */
     req.onload = function() {
       func(req.responseText);
       document.querySelector('#initial').innerHTML += ' done';
@@ -445,11 +407,78 @@ const get = function(path, func) {
 const draw_sheet = function(sortelem) {
 
   return new Promise(function(resolve, reject) {
+
     document.querySelector('#initial').innerHTML += '<br />drawing sheet...';
+
+    /////////////////
+    // set columns //
+    /////////////////
+
+    const header_sta = JSON.parse(JSON.stringify(header_sta0));
+    const header_val = JSON.parse(JSON.stringify(header_val0));
+
+    if (!document.querySelector('#toggle_ato').checked) {
+      header_val['積雪'].sub.splice(1, 2);
+      delete header_val['あと何cm'];
+    }
+
+    if (!document.querySelector('#toggle_s1s').checked) delete header_val['S1'];
+    if (!document.querySelector('#toggle_dnn').checked) delete header_val['積雪深差'];
+
+    if (document.querySelector('#long').checked) {
+      header_val['積雪'].sub.splice(1, 2);
+      delete header_val['あと何cm'];
+      delete header_val['気温'];
+      delete header_val['降雪深'];
+      delete header_val['積雪深差'];
+      delete header_val['S1'];
+      document.querySelector('#area').value = 'hok';
+      document.querySelector('#orga').value = 'jma';
+      document.querySelector('#elem').value = 'snc';
+      document.querySelector('#area').disabled = true;
+      document.querySelector('#orga').disabled = true;
+      document.querySelector('#elem').disabled = true;
+    } else {
+      document.querySelector('#area').disabled = false;
+      document.querySelector('#orga').disabled = false;
+      document.querySelector('#elem').disabled = false;
+
+    }
 
     const init = document.querySelector('#init').value;
     const area = document.querySelector('#area').value;
     const orga = document.querySelector('#orga').value;
+
+    //////////////////////
+    // sort preparation //
+    //////////////////////
+
+    if        (sortelem === undefined && sortelemprev === undefined) {
+      // default
+      isortupdown = 0;
+    } else if (sortelem === undefined && sortelemprev !== undefined) {
+      // same as previous sort
+      sortelem = sortelemprev;
+    } else if (sortelem !== undefined && sortelemprev == sortelem) {
+      // same elem, inverted order
+      sortelem = sortelemprev;
+      isortupdown += 1;
+      if (isortupdown >= 3) {
+        // reset to default when 3rd change
+        sortelem = undefined;
+        isortupdown = 0;
+      }
+    } else {
+      // first sort for this elem
+      isortupdown = 1;
+    }
+
+    const sortorder = (
+      (sortelem == 'nam' || (sortelem || '').indexOf('at') == 0 || sortelem == 'tmp') ? [0, 1, -1] :
+      [0, -1, 1]
+    );
+
+    const sortupdown = sortorder[isortupdown];
 
     ///////////////////////////
     // generate table header //
@@ -487,7 +516,8 @@ const draw_sheet = function(sortelem) {
       for (let i = 0; i < h.sub.length; i++) {
         let solo = h.sub[i];
         solo += '<span class="up">▲</span><span class="down">▼</span>';
-        insert += '<th class="' + h.classes[i] + '">' + solo + '</th>';
+        if (key == 'S1') solo = val[1].slice(icols.val.s01 - 23, icols.val.s01 + 1)[i];
+        insert += '<th class="' + h.classes[i] + (' td-' + h.key[i]) + '">' + solo + '</th>';
       }
     });
 
@@ -501,42 +531,12 @@ const draw_sheet = function(sortelem) {
     Object.keys(header_val).forEach(function(key) {
       const h = header_val[key];
       h.key.forEach(function(hh) {
+        if (hh == 's1s') return false;
         const query = document.querySelector('#fixheader th.td-' + hh);
         if (query === null) return true;
         query.addEventListener('mouseup', function() { redraw(hh); });
       });
     });
-
-    //////////////////////
-    // sort preparation //
-    //////////////////////
-
-    if        (sortelem === undefined && sortelemprev === undefined) {
-      // default
-      isortupdown = 0;
-    } else if (sortelem === undefined && sortelemprev !== undefined) {
-      // same as previous sort
-      sortelem = sortelemprev;
-    } else if (sortelem !== undefined && sortelemprev == sortelem) {
-      // same elem, inverted order
-      sortelem = sortelemprev;
-      isortupdown += 1;
-      if (isortupdown >= 3) {
-        // reset to default when 3rd change
-        sortelem = undefined;
-        isortupdown = 0;
-      }
-    } else {
-      // first sort for this elem
-      isortupdown = 1;
-    }
-
-    const issortdownfirst = (
-      sortelem == 'nam' ||
-      (sortelem || '').indexOf('at') == 0 ||
-      sortelem == 'tmp'
-    );
-    const sortupdown = [0, -1, 1].map(x => x * (issortdownfirst ? -1 : 1))[isortupdown];
 
     ////////////////////
     // generate table //
@@ -586,7 +586,7 @@ const draw_sheet = function(sortelem) {
           }
           solo += '<img src="' + imgfile + '" class="td-nam-sub" />';
           if (sta[irow][icols.sta.obs] !== '') solo += '<br /><span class="td-nam-obs">（' + sta[irow][icols.sta.obs] + '）</span>';
-          solo += '</td><td class="td-ico"><a href="' + return_url(irow) + '" target="_blank">&#x1f310;</a>';
+          solo += '</td><td class="td-ico">' + (return_url(irow) !== null ? '<a href="' + return_url(irow) + '" target="_blank">&#x1f310;</a>' : '');
         }
 
         insert_row += '<td class="' + tdclasses + '">' + solo + '</td>';
@@ -596,13 +596,14 @@ const draw_sheet = function(sortelem) {
         const h = header_val[key];
         for (let i = 0; i < h.sub.length; i++) {
           let solo = val[ival[irow]][icols.val[h.key[i]]];
+          if (key == 'S1') solo = val[ival[irow]][icols.val.s01 - 23 + i];
 
           let tdclassplus = '';
 
           if (h.sub[i].indexOf('あ') == 0) {
 
             solo = val[ival[irow]][icols.val['snc']];
-            let solonum  = split_flag(solo)[0];
+            let solonum = split_flag(solo)[0];
             const s_val = sta[irow][icols.sta[h.key[i]]];
             if (s_val === '') {
               solonum = '-';
@@ -617,7 +618,7 @@ const draw_sheet = function(sortelem) {
               }
             }
             solo = solonum;
-            val[ival[irow]][icols.val[h.key[i]]] = solonum;
+            val[ival[irow]][icols.val[h.key[i]]] = solonum + '';
 
           } else if (key == 'あと何cm') {
 
@@ -645,7 +646,7 @@ const draw_sheet = function(sortelem) {
               }
             }
             solo = solonum + soloflag;
-            val[ival[irow]][icols.val[h.key[i]]] = solonum;
+            val[ival[irow]][icols.val[h.key[i]]] = solonum + '';
           } else {
 
             const atx = ['atk', 'att', 'atw', 'atc'];
@@ -654,7 +655,7 @@ const draw_sheet = function(sortelem) {
               if (tdclassplus != '') break;
               if (!judge_limit(irow, h.sub[i], solo, atx[j])) continue;
               tdclassplus = className[atx[j]];
-              if (alertTarget[region].indexOf(atx[j]) < 0) continue;
+              if (atx[j] == 'atc') continue;
               const johoobj = {
                 row: irow,
                 val: solo,
@@ -670,7 +671,7 @@ const draw_sheet = function(sortelem) {
 
           if (tdclassplus == '') tdclassplus = ' ' + (key == '気温' ? 't' : '') + return_level(solo, h.key[i]);
 
-          insert_row += '<td class="' + h.classes[i] + tdclassplus + '">' + solo + '</td>';
+          insert_row += '<td class="' + h.classes[i] + tdclassplus + (' td-' + h.key[i]) + ((i == 0) ? ' leftline' : '') + '">' + solo + '</td>';
         }
       });
 
@@ -682,16 +683,11 @@ const draw_sheet = function(sortelem) {
 
       let sortval = ival[irow];
 
-      if (sortelem !== undefined) {
-        if        (sortelem == 'nam') {
-          sortval = sta[irow][icols.sta.yom] || (sortupdown == 1 ? 'ﾝ' : 'ｱ');
-        } else if (sortelem.indexOf('at') == 0) {
-          sortval = val[ival[irow]][icols.val[sortelem]];
-          if (isNaN(sortval)) sortval = 999 * sortupdown;
-        } else {
-          sortval = split_flag(val[ival[irow]][icols.val[sortelem]])[0];
-          if (sortval === '' || isNaN(sortval)) sortval = 999 * sortupdown;
-        }
+      if (sortelem == 'nam') {
+        sortval = sta[irow][icols.sta.yom] || (sortupdown == 1 ? 'ﾝ' : 'ｱ');
+      } else if (sortelem !== undefined) {
+        sortval = split_flag(val[ival[irow]][icols.val[sortelem]] || '')[0];
+        if (sortval === '' || isNaN(sortval)) sortval = 999 * sortupdown;
       }
 
       insert_rows[ival[irow] - 2] = new Object();
@@ -870,9 +866,10 @@ const draw_map = function() {
         minZoom:  6,
         maxZoom: 16,
         keyboard: false,
+        zoomControl: false,
       });
 
-      L.control.scale({
+      new L.control.scale({
         maxWidth: 200,
         position: 'bottomright',
         imperial: false,
@@ -909,8 +906,10 @@ const draw_map = function() {
         "全国最新写真": foto
       };
 
-      layerControl = L.control.layers(baseMaps).addTo(map);
+      layerControl = new L.control.layers(baseMaps, null, { position: 'bottomright' }).addTo(map);
       gsishiro.addTo(map);
+
+      new L.Control.Zoom({ position: 'bottomright' }).addTo(map);
 
       map.on('click', function() { set_point(0); });
     }
@@ -932,21 +931,16 @@ const draw_map = function() {
       markerlayer = undefined;
     }
 
-    if (legend !== undefined) {
-      map.removeControl(legend);
-      legend = undefined;
-    }
-
     /////////////////
     // add jmatile //
     /////////////////
 
     const jmaelem = (
       (elem == 'snc') ? 'snowd' :
-      (elem == 's03') ? 'snowf03h' :
-      (elem == 's06') ? 'snowf06h' :
-      (elem == 's12') ? 'snowf12h' :
-      (elem == 's24') ? 'snowf24h' : null
+      (elem == 's03' || elem == 'd03') ? 'snowf03h' :
+      (elem == 's06' || elem == 'd06') ? 'snowf06h' :
+      (elem == 's12' || elem == 'd12') ? 'snowf12h' :
+      (elem == 's24' || elem == 'd24') ? 'snowf24h' : null
     );
 
     const initnow_date = new Date();
@@ -956,13 +950,13 @@ const draw_map = function() {
 
       const initutc = Time.strUTC(initjst_date, '%Y%m%d%H%M') + '00';
       jmatile = L.tileLayer(
-        'http://www.data.jma.go.jp/fcd/yoho/snow/jp/data/snow/' + initutc + '/none/' + initutc + '/surf/' + jmaelem + '/{z}/{x}/{y}.png',
+        'https://www.jma.go.jp/bosai/jmatile/data/snow/' + initutc + '/none/' + initutc + '/surf/' + jmaelem + '/{z}/{x}/{y}.png',
         { opacity: document.querySelector('#opacity').value }
       );
       layerControl.addOverlay(jmatile, '雪タイル');
       map.addLayer(jmatile);
 
-      const insert = '<br /><img src="http://www.data.jma.go.jp/fcd/yoho/snow/jp/images/legend_normal_' + jmaelem + '.png" />';
+      const insert = 'タイル凡例<br /><img src="https://www.jma.go.jp/bosai/snow/images/legend_normal_' + jmaelem + '.png" />';
       document.querySelector('#tile_legend').innerHTML = insert;
 
       document.querySelector('#opacity_control').style.display = 'inline';
@@ -1022,23 +1016,24 @@ const draw_map = function() {
 
     markerlayer.addTo(map);
 
-    ////////////////
-    // add legend //
-    ////////////////
+    ///////////////////////
+    // add chohyo legend //
+    ///////////////////////
 
-    const bararray = ['snc', 's01', 's03s06d03d06', 's12s24d12d24', 'tmp'];
-    let bar;
-    bararray.forEach(function(b) { if (b.indexOf(elem) >= 0) bar = b; });
-
-    if (bar !== undefined) {
-      legend = L.control({ position: 'bottomright' });
-      legend.onAdd = function() {
-        let img = L.DomUtil.create('img');
-        img.src = 'lib/img/bar_' + bar + '.png';
-        return img;
-      };
-      legend.addTo(map);
+    let insert = '地点凡例<br /><table style="border: 0;"><tr>';
+    insert += '<td rowspan="1" style="border: 0;"></td>';
+    insert += '<td rowspan="2" style="border: 0;">' + unit + '</td></tr><tr>';
+    for (let lv = 9; lv >= 0; lv--) {
+      if (lv < 9 && thresholds[elem][lv] == thresholds[elem][lv + 1]) continue;
+      insert += '<td rowspan="2" class="' + thin + 'lv' + lv + '" style="border: 1px solid #666;"></td></tr><tr>';
+      if (thresholds[elem][lv] < -900) break;
+      insert += '<td rowspan="2" style="border: 0;">' + (elem.indexOf('at') == 0 ? -1 : 1) * thresholds[elem][lv] + '</td></tr><tr>';
     }
+    if (thresholds[elem][0] > -900) insert += '<td rowspan="2" class="' + thin + 'lv-" style="border: 1px solid #666;"></td></tr><tr>';
+    insert += '<td rowspan="1" style="border: 1px solid transparent;"></td></tr></table>';
+
+    document.querySelector('#chohyo_legend').innerHTML = insert;
+    document.querySelector('#chohyo_legend').style.display = 'block';
 
     ////////////////////
     // postprocessing //
@@ -1222,7 +1217,6 @@ const set_window = function() {
   }
 
   document.querySelector('#collapse_control').style.display = 'block';
-  document.querySelector('#collapse_control').style.left = document.querySelector('#sheet').clientWidth + 'px';
 
   let rightroom = document.body.clientWidth - document.querySelector('#sheet').clientWidth;
   if (document.querySelector('#toggle_map').checked && rightroom >= 500) {
@@ -1261,6 +1255,40 @@ const prefJa2En = function(str) {
     case '岐阜'  : return 'gifu';
     case '静岡'  : return 'shizuoka';
     case '愛知'  : return 'aichi';
+    case '三重'  : return 'mie';
+    case '滋賀'  : return 'shiga';
+    case '京都'  : return 'kyoto';
+  }
+}; // prefJa2En
+
+
+const prefJa2Jis = function(str) {
+  switch (str) {
+    case '青森'  : return '02';
+    case '岩手'  : return '03';
+    case '宮城'  : return '04';
+    case '秋田'  : return '05';
+    case '山形'  : return '06';
+    case '福島'  : return '07';
+    case '茨城'  : return '08';
+    case '栃木'  : return '09';
+    case '群馬'  : return '10';
+    case '埼玉'  : return '11';
+    case '千葉'  : return '12';
+    case '東京'  : return '13';
+    case '神奈川': return '14';
+    case '新潟'  : return '15';
+    case '富山'  : return '16';
+    case '石川'  : return '17';
+    case '福井'  : return '18';
+    case '山梨'  : return '19';
+    case '長野'  : return '20';
+    case '岐阜'  : return '21';
+    case '静岡'  : return '22';
+    case '愛知'  : return '23';
+    case '三重'  : return '24';
+    case '滋賀'  : return '25';
+    case '京都'  : return '26';
   }
 }; // prefJa2En
 
@@ -1268,7 +1296,8 @@ const prefJa2En = function(str) {
 const return_url = function(irow) {
   switch (sta[irow][icols.sta.org]) {
     case '1':
-      return 'https://www.jma.go.jp/jp/amedas_h/today-' + sta[irow][icols.sta.key] + '.html';
+      //return 'https://www.jma.go.jp/jp/amedas_h/today-' + sta[irow][icols.sta.key] + '.html';
+      return 'https://www.jma.go.jp/bosai/amedas/#area_type=offices&format=table1h&area_code=' + prefJa2Jis(sta[irow][icols.sta.prf]) + '0000&amdno=' + sta[irow][icols.sta.key];
     case '3':
       switch (sta[irow][icols.sta.prf]) {
         case '新潟':
@@ -1363,6 +1392,7 @@ const judge_limit = function(irow, sub, solo, sortelem) {
 
 
 const split_flag = function(v) {
+  v = v || '';
   const vnum  = v.replace(/[F\)\]#]+/g, '');
   const vflag = v.replace(/[X0-9\.\-]+/g, '');
   return [vnum, vflag];
@@ -1416,11 +1446,14 @@ const makeurl = function() {
   const elem = document.querySelector('#elem').value;
 
   let urlstates = new Array();
-  if (region != 'all') urlstates.push('r=' + region);
-  if (!!area && area != defaultArea[region]) urlstates.push('a=' + area);
+  if (!!area && area != 'all') urlstates.push('a=' + area);
   if (!!orga && orga != 'all') urlstates.push('o=' + orga);
   if (!!elem && elem != 'snc') urlstates.push('e=' + elem);
+  if ( document.querySelector('#long'             ).checked) urlstates.push('l=1');
   if (!document.querySelector('#toggle_chohyo'    ).checked) urlstates.push('c=0');
+  if ( document.querySelector('#toggle_dnn'       ).checked) urlstates.push('d=1');
+  if (!document.querySelector('#toggle_ato'       ).checked) urlstates.push('n=0');
+  if ( document.querySelector('#toggle_s1s'       ).checked) urlstates.push('s=1');
   if ( document.querySelector('#toggle_minicharts').checked) urlstates.push('g=1');
   if (!document.querySelector('#toggle_map'       ).checked) urlstates.push('m=0');
 
@@ -1456,31 +1489,33 @@ window.onload = function() {
       paramArray[paramItem[0]] = paramItem[1];
     }
 
-    if (paramArray['r'] !== undefined) region = paramArray['r'];
+    const areas = {};
 
-    let areas = {};
-    let orgas = {};
-
-    if (region == 'hokuriku') {
-      document.title += ' 北陸版';
-      orgas = { ...orgalist.general, ...orgalist.hokuriku };
-    } else if (region == 'tohoku') {
-      document.title += ' 東北版';
-      orgas = { ...orgalist.general, ...orgalist.tohoku };
-    } else {
-      region = 'all';
-      orgas = { ...orgalist.general, ...orgalist.hokuriku, ...orgalist.tohoku };
-    }
-
-    areaarray[region].forEach(function(area) {
-      areas[area] = arealist0[area].name;
+    let dummyNum = 0;
+    areaArray.forEach(function(area) {
+      if (area != 'dummy') {
+        areas[area] = arealist0[area].name;
+      } else {
+        areas['dummy' + dummyNum] = arealist0['dummy'].name;
+        dummyNum++;
+      }
     });
+
+    const orgas = {
+        all:  '全機関',
+        info: '情報対象',
+        jma:  '気象庁',
+        ken:  '府県',
+        mlit: '整備局',
+        atom: '原子力',
+    };
 
     const set_options = function(id, obj) {
       Object.keys(obj).forEach(function(key) {
         let opt = document.createElement('option');
         opt.value = key;
         opt.text  = obj[key];
+        if (key.indexOf('dummy') >= 0) opt.disabled = 'disabled';
         document.querySelector(id).appendChild(opt);
       });
     };
@@ -1488,17 +1523,21 @@ window.onload = function() {
     set_options('#area', areas);
     set_options('#orga', orgas);
 
-    if (paramArray['a'] === undefined) document.querySelector('#area').value = defaultArea[region];
+    if (paramArray['a'] === undefined) document.querySelector('#area').value = 'all';
 
     if (paramArray['a'] !== undefined) document.querySelector('#area').value = paramArray['a'];
     if (paramArray['o'] !== undefined) document.querySelector('#orga').value = paramArray['o'];
     if (paramArray['e'] !== undefined) document.querySelector('#elem').value = paramArray['e'];
     if (paramArray['i'] !== undefined) document.querySelector('#init').value = paramArray['i'];
+    if (paramArray['l'] == '1') $('#long'             ).bootstrapToggle('on' );
     if (paramArray['c'] == '0') $('#toggle_chohyo'    ).bootstrapToggle('off');
+    if (paramArray['d'] == '1') $('#toggle_dnn'       ).bootstrapToggle('on' );
+    if (paramArray['n'] == '0') $('#toggle_ato'       ).bootstrapToggle('off');
+    if (paramArray['s'] == '1') $('#toggle_s1s'       ).bootstrapToggle('on' );
     if (paramArray['g'] == '1') $('#toggle_minicharts').bootstrapToggle('on' );
     if (paramArray['m'] == '0') $('#toggle_map'       ).bootstrapToggle('off');
 
-    await get(prefix[region] + filepath.stations[region], onload.stations).catch(console.error);
+    await get(prefix + filepath.stations, onload.stations).catch(console.error);
     await update(false);
     document.querySelector('#initial').style.display = 'none';
   })();
@@ -1508,17 +1547,23 @@ window.onload = function() {
   document.querySelector('#init_n').addEventListener('mouseup', function() { update(); });
   document.querySelector('#init_b').addEventListener('mouseup', function() { changeinit(-1); });
   document.querySelector('#init_f').addEventListener('mouseup', function() { changeinit( 1); });
+  document.querySelector('#init_bb').addEventListener('mouseup', function() { changeinit(-24); });
+  document.querySelector('#init_ff').addEventListener('mouseup', function() { changeinit( 24); });
   document.querySelector('#init_e').addEventListener('mouseup', function() { changeinit( 0); });
 
   document.querySelector('#area').addEventListener('change', function() { set_point(-1); redraw(); });
   document.querySelector('#orga').addEventListener('change', function() { redraw(); });
   document.querySelector('#elem').addEventListener('change', function() { draw_map(); });
 
+  $('#long' ).change(function() { redraw();   });
   $('#oto'  ).change(function() { button1();  });
   $('#renew').change(function() { autoload(); });
 
   $('#toggle_chohyo'    ).change(function() { set_window(); });
   $('#toggle_map'       ).change(function() { set_window(); });
+  $('#toggle_dnn'       ).change(function() { redraw();     });
+  $('#toggle_ato'       ).change(function() { redraw();     });
+  $('#toggle_s1s'       ).change(function() { redraw();     });
   $('#toggle_minicharts').change(function() { redraw();     });
 
   document.querySelector('#graph_close').addEventListener('mouseup', function() { set_point(0); });

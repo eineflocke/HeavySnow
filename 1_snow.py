@@ -56,13 +56,15 @@ download mode: a = all
                 c = tochigi  (latest only)
                 u = aomori   (latest only)
                 v = aomori_at(latest only)
-                w = iwate    (latest only) <- New!
-               j = jma-hp    (latest only)
-               b = bufr      (time selectable)
+                w = iwate    (latest only)
+               j = jma-hp    (time selectable)
 
 process mode : p             (time selectable)
+
+daily mode   : q             (time selectable)
     ''' % __file__)
     sys.exit(1)
+    #                b = bufr      (time selectable)
 
 def inclusive_index(lst, purpose):
     for i, e in enumerate(lst):
@@ -190,6 +192,7 @@ colkey    = stacolnames.index("検索キー")
 colorg    = stacolnames.index("所属")
 colpref   = stacolnames.index("府県")
 colname   = stacolnames.index("情報発表名")
+colobs    = stacolnames.index("観測所名")
 colsd     = stacolnames.index("積雪厳重")
 #coljma    = stacolnames.index("JMA番号")
 #colqc     = stacolnames.index("気温JMA番号")
@@ -361,13 +364,26 @@ if "w" in symbols:
         if not result:
             break
 
-################################################
-### jmahp                                    ###
-### table / hourly after 05min / 1h SD, Temp ###
-################################################
+###################################################################
+### jmahp                                                       ###
+### json / every 10m after 12min / 1h SD, S[1, 6, 12, 24], Temp ###
+###################################################################
 
 if "j" in symbols:
     for row in [x for x in stations if x[colorg] == "1"]:
+        jma      = row[colkey]
+        jmaymd = ymdhjst[0: 8]
+        jmah   = "%02d" % (3 * (int(ymdhjst[8:10]) // 3))
+        url = "https://www.jma.go.jp/bosai/amedas/data/point/" + jma + "/" + jmaymd + "_" + jmah + ".json"
+        filename = "jmahp_" + jma + ".json"
+        #result = downloader4latest(url, filename, 12, overwrite = True)
+        filepath = "raw/" + ymdhjst + "/" + filename
+        result = downloader(url, filepath, overwrite = True)
+
+        if not result:
+            break
+
+        '''
         jma      = row[colkey]
         url      = "https://www.jma.go.jp/jp/amedas_h/today-" + jma + ".html"
         filename = "jmahp_" + jma + ".html"
@@ -383,6 +399,7 @@ if "j" in symbols:
 
         #if not result:
         #    break
+        '''
 
 #################################################
 ### bufr                                      ###
@@ -410,7 +427,7 @@ if "p" in symbols:
     invalid = -999
 
     out = [[""      for x in range(25)] for y in range(len(stations) + 2)]
-    det = [[invalid for x in range(86)] for y in range(len(stations) + 2)]
+    det = [["" if y < 2 else invalid for x in range(86)] for y in range(len(stations) + 2)]
 
     out[0][ 0] = "情報発表名"
     out[0][ 1] = "積雪"
@@ -471,6 +488,8 @@ if "p" in symbols:
         sf25     = [invalid for x in range(25)]
         temp25   = [invalid for x in range(25)]
         sd25flag = [0       for x in range(25)]
+
+        snn = { "3": None, "6": None, "12": None, "24": None }
 
         ymdhdata = ""
 
@@ -1112,64 +1131,115 @@ if "p" in symbols:
             ### decoder for jmahp ###
             #########################
 
-            filepathprev = ""
+            if int(ymdhjst) >= 2021012900:
+                for backhour in range(25):
+                    snowdepth = invalid
+                    snowfall  = invalid
+                    temp      = invalid
 
-            for backhour in range(25):
-                snowdepth = invalid
-                snowfall  = invalid
-                temp      = invalid
-
-                ymdhjst24  = ft2valid(ymdhjst, 0            , True, 0)
-                ymdhback24 = ft2valid(ymdhjst, -1 * backhour, True, 0)
-
-                if int(ymdhback24[0:8]) == int(ymdhjst24[0:8]):
-                    filepath = "raw/" + ymdhjst + "/jmahp_" + row[colkey] + ".html"
-                else:
-                    ymdhyest = ft2valid(ymdhjst, -1, False, 0)[0:8] + "00"
-                    filepath = "raw/" + ymdhyest + "/jmahp_" + row[colkey] + ".html"
-
-                if not os.path.isfile(filepath):
-                    continue
-
-                if filepath != filepathprev:
-                    soup = BeautifulSoup(open(filepath, "r", encoding="utf-8"), "html.parser")
-                    souprows = soup.find_all("table")[5].find_all("tr")
-                    souprow0 = [s.get_text() for s in souprows[0].find_all("td")]
-                    del souprows[0:2]
-
-                    filepathprev = filepath
-
-                for souprow in souprows:
-                    soupcols = souprow.find_all("td")
-
-                    if int(soupcols[souprow0.index("時刻")].get_text()) == int(ymdhback24[8:10]):
-                        try:
-                            snowdepth = soupcols[souprow0.index("積雪深")].get_text()
-                        except:
-                            pass
-
-                        try:
-                            temp = soupcols[souprow0.index("気温")].get_text()
-                        except:
-                            pass
-
-                        break
-
-                try:
-                    snowdepth = re.sub("[\)\]]", "", snowdepth)
-                    sd25  [backhour] = int(snowdepth)
-                except:
-                    pass
-
-                try:
-                    temp = re.sub("[\)\]]", "", temp)
-                    temp25[backhour] = float(temp)
-                except:
-                    pass
-
-                if ymdhdata == "":
                     ymdhback = ft2valid(ymdhjst, -1 * backhour, False, 0)
-                    ymdhdata = ymdhback + "00"
+                    filepath = "raw/" + ymdhback + "/jmahp_" + row[colkey] + ".json"
+
+                    if not os.path.isfile(filepath):
+                        continue
+
+                    try:
+                        jmajson = json.load(open(filepath, "r"))
+                        jma = jmajson[ymdhback + "0000"]
+                    except:
+                        #os.remove(filepath)
+                        continue
+
+                    try:
+                        sd25  [backhour] = int(jma["snow"][0])
+                    except:
+                        pass
+
+                    try:
+                        sf25  [backhour] = int(jma["snow1h"][0])
+                    except:
+                        pass
+
+                    try:
+                        temp25[backhour] = float(jma["temp"][0])
+                    except:
+                        pass
+
+                    for hour in [6, 12, 24]:
+                        try:
+                            snn[hour] = str(jma["snow" + str(hour) + "h"][0])
+                            if   jma["snow" + str(hour) + "h"][1] >= 6:
+                                snn[hour] = invalid
+                            elif jma["snow" + str(hour) + "h"][1] >= 4:
+                                snn[hour] += "]"
+                            elif jma["snow" + str(hour) + "h"][1] >= 1:
+                                snn[hour] += ")"
+
+                        except:
+                            pass
+
+                    if ymdhdata == "":
+                        ymdhdata = ymdhback + "00"
+
+            else:
+                filepathprev = ""
+
+                for backhour in range(25):
+                    snowdepth = invalid
+                    snowfall  = invalid
+                    temp      = invalid
+
+                    ymdhjst24  = ft2valid(ymdhjst, 0            , True, 0)
+                    ymdhback24 = ft2valid(ymdhjst, -1 * backhour, True, 0)
+
+                    if int(ymdhback24[0:8]) == int(ymdhjst24[0:8]):
+                        filepath = "raw/" + ymdhjst + "/jmahp_" + row[colkey] + ".html"
+                    else:
+                        ymdhyest = ft2valid(ymdhjst, -1, False, 0)[0:8] + "00"
+                        filepath = "raw/" + ymdhyest + "/jmahp_" + row[colkey] + ".html"
+
+                    if not os.path.isfile(filepath):
+                        continue
+
+                    if filepath != filepathprev:
+                        soup = BeautifulSoup(open(filepath, "r", encoding="utf-8"), "html.parser")
+                        souprows = soup.find_all("table")[5].find_all("tr")
+                        souprow0 = [s.get_text() for s in souprows[0].find_all("td")]
+                        del souprows[0:2]
+
+                        filepathprev = filepath
+
+                    for souprow in souprows:
+                        soupcols = souprow.find_all("td")
+
+                        if int(soupcols[souprow0.index("時刻")].get_text()) == int(ymdhback24[8:10]):
+                            try:
+                                snowdepth = soupcols[souprow0.index("積雪深")].get_text()
+                            except:
+                                pass
+
+                            try:
+                                temp = soupcols[souprow0.index("気温")].get_text()
+                            except:
+                                pass
+
+                            break
+
+                    try:
+                        snowdepth = re.sub("[\)\]]", "", snowdepth)
+                        sd25  [backhour] = int(snowdepth)
+                    except:
+                        pass
+
+                    try:
+                        temp = re.sub("[\)\]]", "", temp)
+                        temp25[backhour] = float(temp)
+                    except:
+                        pass
+
+                    if ymdhdata == "":
+                        ymdhback = ft2valid(ymdhjst, -1 * backhour, False, 0)
+                        ymdhdata = ymdhback + "00"
 
             '''
             ########################
@@ -1304,23 +1374,27 @@ if "p" in symbols:
             maxback = [3, 6, 12, 24][isnowfall]
             sfacc = 0
 
-            for backhour in range(maxback):
-                if sf25[backhour] >= 0:
-                    sfacc += sf25[backhour]
-
             if sd25[maxback] == invalid or sd25[0] == invalid:
                 sddiff = invalid
             else:
                 sddiff = sd25[0] - sd25[maxback]
 
-            errorrate = [(i >= 2) for i in sd25flag[0:maxback]].count(True) / maxback
+            if snn[str(maxback)] is not None:
+                sfacc = snn[str(maxback)]
 
-            if   errorrate >= 0.4 or sfacc == invalid:
-                sfacc  = invalid
-            elif errorrate >= 0.2:
-                sfacc  = str(sfacc)  + "]"
-            elif errorrate >  0.0:
-                sfacc  = str(sfacc)  + ")"
+            else:
+                for backhour in range(maxback):
+                    if sf25[backhour] >= 0:
+                        sfacc += sf25[backhour]
+
+                errorrate = [(i >= 2) for i in sd25flag[0:maxback]].count(True) / maxback
+
+                if   errorrate >= 0.4 or sfacc == invalid:
+                    sfacc  = invalid
+                elif errorrate >= 0.2:
+                    sfacc  = str(sfacc)  + "]"
+                elif errorrate >  0.0:
+                    sfacc  = str(sfacc)  + ")"
 
             out[iout][3 + isnowfall] = sfacc
             out[iout][7 + isnowfall] = sddiff
@@ -1390,26 +1464,8 @@ if "p" in symbols:
     if not os.path.isdir("csv"):
         os.makedirs("csv")
 
-    outname = "csv/So_" + ymdhjst + ".csv"
-
-    csv.writer(open(outname, "w", encoding="utf-8"), delimiter=",").writerows(out)
-
-    regions = {
-        "all"     : None,
-        "hokuriku": ["新潟", "富山", "石川", "福井"],
-        "tohoku"  : ["青森", "岩手"]
-    }
-
-    for region, prefs in regions.items():
-        det2 = []
-
-        for irow in range(len(det)):
-            if region == "all" or irow <= 1 or det[irow][0] in prefs:
-                det2.append(det[irow])
-
-        detname = "csv/" + region + "_" + ymdhjst + ".csv"
-
-        csv.writer(open(detname, "w", encoding="shift_jis"), delimiter=",").writerows(det2)
+    detname = "csv/" + ymdhjst + ".csv"
+    csv.writer(open(detname, "w", encoding="shift_jis"), delimiter=",").writerows(det)
 
     printmsg("csv output done")
 
@@ -1417,8 +1473,8 @@ if "p" in symbols:
     ### make timelist ###
     #####################
 
-    timelist = glob.glob("csv/all_20????????.csv")
-    timelist = [re.sub("csv/all_", "", timelist[i]) for i in range(len(timelist))]
+    timelist = glob.glob("csv/20????????.csv")
+    timelist = [re.sub("csv/", "", timelist[i]) for i in range(len(timelist))]
     timelist = [re.sub("\.csv"       , "", timelist[i]) for i in range(len(timelist))]
     timelist = sorted(timelist)[::-1]
 
@@ -1426,3 +1482,136 @@ if "p" in symbols:
     csv.writer(open(listname, "w", encoding="utf-8"), delimiter=",").writerow(timelist)
 
     printmsg("timelist output done")
+
+########################
+### output daily csv ###
+########################
+
+if "q" in symbols:
+    ymdhback = ft2valid(ymdhjst, -24, False, 0)
+    iyear  = ymdhback[0:4]
+    imonth = ymdhback[4:6]
+
+    for elem in ["snc", "s24"]:
+        if   elem == "s24":
+            view = "p8"
+        elif elem == "snc":
+            view = "p9"
+
+        for ipref in ["54", "55", "56", "57"]:
+            url = "http://www.data.jma.go.jp/obd/stats/etrn/view/daily_h1.php?block_no=00&day=&view=" + view + "&prec_no=" + ipref + "&year=" + iyear + "&month=" + imonth
+            filedir  = "raw/daily/"
+            filepath = filedir + "jmadaily_" + elem + "_" + pref + "_" + iyear + imonth + ".html"
+            downloader(url, filepath, overwrite = True)
+
+'''
+if "r" in symbols:
+    ymdhback = ft2valid(ymdhjst, -24, False, 0)
+
+    for elem in ["snc", "s24"]:
+        for ipref in ["54", "55", "56", "57"]:
+            for imonth in ["11", "12", "01", "02", "03"]:
+                iyear  = ymdhback[0:4]
+
+                if   int(imonth) >= 10 and int(ymdhback[4:6]) <=  4:
+                    iyear = str(int(iyear) + 1)
+                elif int(imonth) <=  4 and int(ymdhback[4:6]) >= 10:
+                    iyear = str(int(iyear) - 1)
+
+                filedir  = "raw/daily/"
+                filepath = filedir + "jmadaily_" + elem + "_" + pref + "_" + iyear + imonth + ".html"
+
+                if not os.path.isfile(filepath):
+                    continue
+
+                try:
+                    soup     = BeautifulSoup(open(filepath, "r", encoding="utf-8"), "html.parser")
+                    souprows = soup.find("table", id = "tablefix1").find_all("tr")
+                    souphead = [re.sub("*", "", x) for x in souprows[0].find_all("th")]
+                    soupelem = [[re.sub("[\s\)\]#]+", "", y) for y in x.find_all("td")] for x in souprows]
+
+                    for i in range(len(soupelem)):
+                        for j in range(len(soupelem[i])):
+                            try:
+                                soupelem[i][j] = int(soupelem[i][j])
+                            except:
+                                soupelem[i][j] = 0
+
+                except:
+                    pass
+
+
+    values = {}
+    obsnames = {}
+
+    for ista in range(len(stations)):
+        row = stations[ista]
+
+        if row[colorg] != "1":
+            continue
+
+        obsname = row[colobs] if row[colobs] != "" else row[colname]
+        obsnames[obsname] = row[colname]
+        values[row[colname]] = { "snc": 0, "s24": 0 }
+
+        for backhour in range(24):
+
+            ymdhback = ft2valid(ymdhjst, -1 * backhour, False, 0)
+            filepath = "raw/" + ymdhback + "/jmahp_" + row[colkey] + ".json"
+
+            if not os.path.isfile(filepath):
+                continue
+
+            try:
+                jmajson = json.load(open(filepath, "r"))
+                jma = jmajson[ymdhback + "0000"]
+                values[row[colname]]["snc"] = max(values[row[colname]]["snc"], int(jma["snow"][0]))
+
+                if backhour == 0:
+                    values[row[colname]]["s24"] = int(jma["snow24h"][0])
+
+            except:
+                pass
+
+    fileyear = int(ymdhjst[0:4])
+    if int(ymdhjst[4:6]) >= 10:
+        fileyear += 1
+
+    for elem in ["snc", "s24"]:
+        dailyname = "csv/daily_" + elem + "_" + str(fileyear) + ".csv"
+
+        with open(dailyname, "r", encoding="shift_jis") as f:
+            reader = csv.reader(f, delimiter=",")
+            daily = [row for row in reader]
+
+        dailyhead = daily[0]
+
+        ymddaily = ft2valid(ymdhjst, -1)[0:8]
+
+        for irow in range(len(daily)):
+            if daily[irow][0] == ymddaily:
+                del daily[irow]
+
+        newline = [ymddaily]
+
+        for icol in range(1, len(dailyhead)):
+            if dailyhead[icol] in obsnames.keys():
+                dailyhead[icol] = obsnames[dailyhead[icol]]
+
+            newline.append(values[dailyhead[icol]][elem] if dailyhead[icol] in values.keys() else "")
+
+        daily.append(newline)
+
+        ymds = [int(daily[i][0]) for i in range(1, len(daily))]
+        indices = [*range(len(ymds))]
+        sorted_indices = sorted(indices, key = lambda i: int(ymds[i]))
+
+        daily2 = [dailyhead]
+
+        for irow in sorted_indices:
+            daily2.append(daily[1 + irow])
+
+        csv.writer(open(dailyname, "w", encoding="shift_jis"), delimiter=",").writerows(daily2)
+
+    printmsg("daily csv output done")
+'''
