@@ -9,7 +9,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev" : "./node_modules/.bin/webpack --config webpack.dev.js",
-    "prod": "./node_modules/.bin/webpack --config webpack.prod.js"
+    "prod": "./node_modules/.bin/webpack --config webpack.prod.js",
+    "daily": "./node_modules/.bin/webpack --config webpack.daily.js"
   },
   "repository": {
     "type": "git",

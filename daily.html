@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="ja">
+<head>
+
+<meta charset="utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta http-equiv="Pragma" content="no-cache" />
+<meta http-equiv="Cache-Control" content="no-cache" />
+
+<link rel="icon" href="lib/img/8-1s2.png" />
+
+<title>北陸の雪日統計値</title>
+
+<script src="lib/js/leaflet.js"></script>
+<link href="lib/css/leaflet.css" rel="stylesheet" />
+
+<script src="lib/js/d3.min.js"></script>
+<script src="lib/js/c3.min.js"></script>
+<link href="lib/css/c3.min.css" rel="stylesheet" />
+
+<style>
+#left_pane {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 800px;
+    height: 100%;
+    overflow-y: scroll;
+}
+
+#load {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate3d(-50%, -50%, 0);
+    text-align: center;
+}
+
+#title {
+    padding: 10px;
+}
+
+#usage {
+    position: absolute;
+    top: 0;
+    right: 0;
+    padding: 10px;
+    color: #339;
+    font-weight: bold;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.c3-axis {
+    font-size: 12px;
+}
+
+[id^=wrapper_] {
+    position: relative;
+    width: 100%;
+    height: 300px;
+}
+
+[id^=chart_] {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+[id^=subtext_] {
+    position: absolute;
+    z-index: 100;
+    top: 0;
+    left: 60px;
+    padding: 5px;
+    background-color: rgba(255, 255, 255, 0.8);
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-weight: bold;
+}
+
+#map_container {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: calc(100% - 800px);
+    height: 100%;
+}
+
+.leaflet-div-icon {
+    position: absolute;
+    width:  20px !important;
+    height: 20px !important;
+    margin-left:  -10px !important;
+    margin-right: -10px !important;
+    background-color: transparent;
+    border: 0;
+    text-align: center;
+}
+
+.icon {
+    text-shadow: 1px 1px 0 #fff, -1px 1px 0 #fff, 1px -1px 0 #fff, -1px -1px 0 #fff;
+    overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate3d(-50%, -50%, 0);
+    font-weight: bold;
+    font-size: 16px;
+    color: #66e;
+}
+
+.active .icon {
+    color: #e66;
+}
+
+.popwrap {
+    position: fixed;
+    z-index: 2001;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: none;
+}
+.poprel {
+    position: relative;
+    z-index: 2002;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+#usagearea {
+    position: absolute;
+    z-index: 2003;
+    top: 50%;
+    left: 50%;
+    width: 800px;
+    height: 80%;
+    padding: 25px;
+            transform: translateY(-50%) translateX(-50%);
+    -webkit-transform: translateY(-50%) translateX(-50%);
+    font-size: 12px;
+    background-color: rgba(255, 255, 255, 1.0);
+    text-align: center;
+    border-radius: 10px;
+}
+.pop0 {
+    z-index: 2004;
+    position: absolute;
+    top: 25px;
+    width: calc(100% - 50px);
+    height: 75px;
+}
+.pop1 {
+    z-index: 2006;
+    position: absolute;
+    top: 100px;
+    width: calc(100% - 50px);
+    height: calc(100% - 125px);
+    text-align: left;
+    overflow-y: scroll;
+}
+.popclose {
+    z-index: 2010;
+    position: absolute;
+    top:   10px;
+    right: 10px;
+    width:  30px;
+    height: 30px;
+    cursor: pointer;
+}
+
+#usagetitle {
+    font-size: 15px;
+    font-weight: bold;
+}
+</style>
+</head>
+<body>
+
+<div id="left_pane">
+    <div id="title">北陸の雪日統計値：<span id="pointname"></span></div>
+    <div id="usage">使い方</div>
+    <div id="wrapper_snc"><div id="subtext_snc"></div><div id="chart_snc"></div></div>
+    <div id="wrapper_s24"><div id="subtext_s24"></div><div id="chart_s24"></div></div>
+    <div id="wrapper_acc"><div id="subtext_acc"></div><div id="chart_acc"></div></div>
+    <div id="load">Loading<br /><img src="lib/img/load.gif" /></div>
+</div>
+
+<div id="map_container"></div>
+
+<!-- usage -->
+<div id="usagewrap" class="popwrap"><div class="poprel"><div id="usagearea" class="poparea">
+    <div class="popclose">
+        <img src="lib/img/close.png" id="usage_close" width="30" height="30" />
+    </div>
+    <div class="pop0">
+        <span id="usagetitle">北陸の雪日統計値</span><br />
+        <a href="SnowView.html" target="_blank">SnowView</a> の姉妹品
+    </div>
+    <div class="pop1">
+        <hr />
+        <h4>使い方</h4>
+        <ul>
+            <li><a href="http://www.data.jma.go.jp/obd/stats/etrn/" target="_blank">過去の気象データ検索</a>を参照して雪日統計値を図示します</li>
+            <li><a href="https://www.jma-net.go.jp/sendai/kansoku-toukei/yukijouhou/touhoku_snow.html" target="_blank">仙管のやつ</a>のパクリです</li>
+            <li>地図の地点名をクリックすると日最深積雪・日降雪・累積積雪のグラフを表示します</li>
+            <li>毎日 00:55 頃に更新します</li>
+            <li>平年値は多分 1981-2010 の値です</li>
+        </ul>
+        <hr />
+        <h4>開発者向け</h4>
+        <ul>
+            <li>地点情報は csv/daily/sta.csv</li>
+            <li>平年値は<a href="http://www.data.jma.go.jp/gmd/risk/obsdl/index.php">過去の気象データ・ダウンロード</a>より取得・成型、 csv/daily/average_[s24, snc].csv に格納</li>
+            <li>日統計値取得元は <a href="http://www.data.jma.go.jp/obd/stats/etrn/">http://www.data.jma.go.jp/obd/stats/etrn/</a> 、 1_snow.py q で取得して csv/daily/jmadaily_[s24, snc]_*.html に格納</li>
+        </ul>
+        <hr />
+        <h4>リリースノート</h4>
+        <ul>
+            <li>2021-02-18 v1.0 とりあえず完成</li>
+        </ul>
+        <hr />
+    </div>
+</div></div></div>
+
+<script src="daily.bundle.js"></script>
+</body>
+</html>

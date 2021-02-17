@@ -65,11 +65,11 @@
 .Mlv- { color: #da8; }
 .MlvX { color: #999; }
 
-.tlv0 { background-color: #00c; color: #fff; }
-.tlv1 { background-color: #05f; color: #fff; }
-.tlv2 { background-color: #0af; color: #fff; }
-.tlv3 { background-color: #0ff; }
-.tlv4 { background-color: #cff; }
+.tlv0 { background-color: #027; color: #fff; }
+.tlv1 { background-color: #04f; color: #fff; }
+.tlv2 { background-color: #08f; color: #fff; }
+.tlv3 { background-color: #4af; color: #fff; }
+.tlv4 { background-color: #8df; }
 .tlv5 { background-color: #fff; }
 .tlv6 { background-color: #fdd; }
 .tlv7 { background-color: #fbb; }
@@ -311,7 +311,8 @@ span.td-atx-sub { font-size: 10px; opacity: 0.8; }
 
 td.td-s1s { font-size: 10px; }
 
-td.leftline { border-left: 1px solid #666; }
+td.leftline  { border-left: 1px solid #666; }
+td.leftline2 { border-left: 1px solid #ccc; }
 
 .set_point { cursor: pointer; }
 
@@ -499,7 +500,6 @@ input[type=range]::-ms-tooltip {
 div[id^=chartbig-] {
     position: relative;
     height: 33%;
-    max-width: 1000px;
 }
 
 span[id^=behind-chartbig-] {

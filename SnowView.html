@@ -61,16 +61,19 @@
         </div>
         <div id="orga_control">
             <select id="orga" class="form-control">
+                <option value="all" selected>全機関</option>
+                <option value="info">情報対象</option>
+                <option value="jma">気象庁</option>
+                <option value="ken">府県</option>
+                <option value="mlit">整備局</option>
+                <option value="atom">原子力</option>
             </select>
         </div>
     </div>
 
     <div class="form-inline">
         <div id="confi">
-            <!--
-            長期モード
-            <input type="checkbox" id="long"  data-width="40" data-height="24" data-size="xs" data-toggle="toggle" data-onstyle="info" data-offstyle="secondary" unchecked />
-            / --><span id="alerttitle" data-toggle="tooltip" data-html="true">報知</span>
+            <span id="alerttitle" data-toggle="tooltip" data-html="true">報知</span>
             <input type="checkbox" id="oto"   data-width="40" data-height="24" data-size="xs" data-toggle="toggle" data-onstyle="info" data-offstyle="secondary" unchecked />
             / 自動更新
             <input type="checkbox" id="renew" data-width="40" data-height="24" data-size="xs" data-toggle="toggle" data-onstyle="info" data-offstyle="secondary" checked />
@@ -96,7 +99,7 @@
     </div>
     <div class="collapse_elems">
         あと何<br />
-        <input type="checkbox" id="toggle_ato" data-width="36" data-height="24" data-size="xs" data-toggle="toggle" data-onstyle="info" data-offstyle="secondary" checked />
+        <input type="checkbox" id="toggle_ato" data-width="36" data-height="24" data-size="xs" data-toggle="toggle" data-onstyle="info" data-offstyle="secondary" unchecked />
     </div>
     <div class="collapse_elems">
         S1帳票<br />
@@ -140,7 +143,7 @@
             <option value="atc">あと何cm: 注意報</option>
             <option value="atw">あと何cm: 警報</option>
             <option value="att">あと何cm: 短時間</option>
-            <option value="atk">あと何cm: 記録雪</option>
+            <option value="atk">あと何cm: 顕著</option>
             <option value="tmp">気温</option>
         </select>
         <span id="opacity_control">

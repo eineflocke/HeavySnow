@@ -1152,11 +1152,15 @@ if "p" in symbols:
 
                     try:
                         sd25  [backhour] = int(jma["snow"][0])
+                        if jma["snow"][1] is None or jma["snow"][1] >= 6:
+                            sd25  [backhour] = invalid
                     except:
                         pass
 
                     try:
                         sf25  [backhour] = int(jma["snow1h"][0])
+                        if jma["snow1h"][1] is None or jma["snow1h"][1] >= 6:
+                            sf25  [backhour] = invalid
                     except:
                         pass
 
@@ -1168,7 +1172,9 @@ if "p" in symbols:
                     for hour in [6, 12, 24]:
                         try:
                             snn[hour] = str(jma["snow" + str(hour) + "h"][0])
-                            if   jma["snow" + str(hour) + "h"][1] >= 6:
+                            if   jma["snow" + str(hour) + "h"][1] is None:
+                                snn[hour] = invalid
+                            elif jma["snow" + str(hour) + "h"][1] >= 6:
                                 snn[hour] = invalid
                             elif jma["snow" + str(hour) + "h"][1] >= 4:
                                 snn[hour] += "]"
@@ -1464,7 +1470,7 @@ if "p" in symbols:
     if not os.path.isdir("csv"):
         os.makedirs("csv")
 
-    detname = "csv/" + ymdhjst + ".csv"
+    detname = "csv/all_" + ymdhjst + ".csv"
     csv.writer(open(detname, "w", encoding="shift_jis"), delimiter=",").writerows(det)
 
     printmsg("csv output done")
@@ -1473,8 +1479,8 @@ if "p" in symbols:
     ### make timelist ###
     #####################
 
-    timelist = glob.glob("csv/20????????.csv")
-    timelist = [re.sub("csv/", "", timelist[i]) for i in range(len(timelist))]
+    timelist = glob.glob("csv/all_20????????.csv")
+    timelist = [re.sub("csv/all_", "", timelist[i]) for i in range(len(timelist))]
     timelist = [re.sub("\.csv"       , "", timelist[i]) for i in range(len(timelist))]
     timelist = sorted(timelist)[::-1]
 
@@ -1483,9 +1489,9 @@ if "p" in symbols:
 
     printmsg("timelist output done")
 
-########################
-### output daily csv ###
-########################
+#############
+### daily ###
+#############
 
 if "q" in symbols:
     ymdhback = ft2valid(ymdhjst, -24, False, 0)
@@ -1500,118 +1506,6 @@ if "q" in symbols:
 
         for ipref in ["54", "55", "56", "57"]:
             url = "http://www.data.jma.go.jp/obd/stats/etrn/view/daily_h1.php?block_no=00&day=&view=" + view + "&prec_no=" + ipref + "&year=" + iyear + "&month=" + imonth
-            filedir  = "raw/daily/"
-            filepath = filedir + "jmadaily_" + elem + "_" + pref + "_" + iyear + imonth + ".html"
+            filedir  = "csv/daily/"
+            filepath = filedir + "jmadaily_" + elem + "_" + ipref + "_" + iyear + imonth + ".html"
             downloader(url, filepath, overwrite = True)
-
-'''
-if "r" in symbols:
-    ymdhback = ft2valid(ymdhjst, -24, False, 0)
-
-    for elem in ["snc", "s24"]:
-        for ipref in ["54", "55", "56", "57"]:
-            for imonth in ["11", "12", "01", "02", "03"]:
-                iyear  = ymdhback[0:4]
-
-                if   int(imonth) >= 10 and int(ymdhback[4:6]) <=  4:
-                    iyear = str(int(iyear) + 1)
-                elif int(imonth) <=  4 and int(ymdhback[4:6]) >= 10:
-                    iyear = str(int(iyear) - 1)
-
-                filedir  = "raw/daily/"
-                filepath = filedir + "jmadaily_" + elem + "_" + pref + "_" + iyear + imonth + ".html"
-
-                if not os.path.isfile(filepath):
-                    continue
-
-                try:
-                    soup     = BeautifulSoup(open(filepath, "r", encoding="utf-8"), "html.parser")
-                    souprows = soup.find("table", id = "tablefix1").find_all("tr")
-                    souphead = [re.sub("*", "", x) for x in souprows[0].find_all("th")]
-                    soupelem = [[re.sub("[\s\)\]#]+", "", y) for y in x.find_all("td")] for x in souprows]
-
-                    for i in range(len(soupelem)):
-                        for j in range(len(soupelem[i])):
-                            try:
-                                soupelem[i][j] = int(soupelem[i][j])
-                            except:
-                                soupelem[i][j] = 0
-
-                except:
-                    pass
-
-
-    values = {}
-    obsnames = {}
-
-    for ista in range(len(stations)):
-        row = stations[ista]
-
-        if row[colorg] != "1":
-            continue
-
-        obsname = row[colobs] if row[colobs] != "" else row[colname]
-        obsnames[obsname] = row[colname]
-        values[row[colname]] = { "snc": 0, "s24": 0 }
-
-        for backhour in range(24):
-
-            ymdhback = ft2valid(ymdhjst, -1 * backhour, False, 0)
-            filepath = "raw/" + ymdhback + "/jmahp_" + row[colkey] + ".json"
-
-            if not os.path.isfile(filepath):
-                continue
-
-            try:
-                jmajson = json.load(open(filepath, "r"))
-                jma = jmajson[ymdhback + "0000"]
-                values[row[colname]]["snc"] = max(values[row[colname]]["snc"], int(jma["snow"][0]))
-
-                if backhour == 0:
-                    values[row[colname]]["s24"] = int(jma["snow24h"][0])
-
-            except:
-                pass
-
-    fileyear = int(ymdhjst[0:4])
-    if int(ymdhjst[4:6]) >= 10:
-        fileyear += 1
-
-    for elem in ["snc", "s24"]:
-        dailyname = "csv/daily_" + elem + "_" + str(fileyear) + ".csv"
-
-        with open(dailyname, "r", encoding="shift_jis") as f:
-            reader = csv.reader(f, delimiter=",")
-            daily = [row for row in reader]
-
-        dailyhead = daily[0]
-
-        ymddaily = ft2valid(ymdhjst, -1)[0:8]
-
-        for irow in range(len(daily)):
-            if daily[irow][0] == ymddaily:
-                del daily[irow]
-
-        newline = [ymddaily]
-
-        for icol in range(1, len(dailyhead)):
-            if dailyhead[icol] in obsnames.keys():
-                dailyhead[icol] = obsnames[dailyhead[icol]]
-
-            newline.append(values[dailyhead[icol]][elem] if dailyhead[icol] in values.keys() else "")
-
-        daily.append(newline)
-
-        ymds = [int(daily[i][0]) for i in range(1, len(daily))]
-        indices = [*range(len(ymds))]
-        sorted_indices = sorted(indices, key = lambda i: int(ymds[i]))
-
-        daily2 = [dailyhead]
-
-        for irow in sorted_indices:
-            daily2.append(daily[1 + irow])
-
-        csv.writer(open(dailyname, "w", encoding="shift_jis"), delimiter=",").writerows(daily2)
-
-    printmsg("daily csv output done")
-'''
